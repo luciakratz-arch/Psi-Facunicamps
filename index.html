@@ -202,10 +202,55 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     </div>
   </div>
   <div class="btn-row">
-    <button class="btn btn-cta" onclick="go(2)">Começar &#8594;</button>
+    <button class="btn btn-cta" onclick="goTcle()">Começar &#8594;</button>
   </div>
   <div style="margin-top:16px;text-align:center">
     <button class="btn-ghost btn" style="flex:none;display:inline-flex" onclick="go(5);carregarCodigosDisponiveis()">&#128202; Ver Relatório do Grupo</button>
+  </div>
+</div>
+
+<!-- S1B: TCLE -->
+<div class="step" id="s1b">
+  <div class="hero" style="margin-bottom:16px">
+    <div class="icon" style="font-size:38px">📋</div>
+    <h1 style="font-size:18px">Termo de Consentimento<br>Livre e Esclarecido</h1>
+    <p style="font-size:12px;opacity:.75">Leia com atenção antes de prosseguir</p>
+  </div>
+
+  <div class="sc" style="font-size:13px;line-height:1.75;color:var(--ts)">
+    <div class="sc-ttl">📄 TCLE — Pesquisa sobre Burnout Universitário</div>
+
+    <p style="margin-bottom:10px">Você está sendo convidado(a) a participar da pesquisa <strong style="color:var(--txt)">"Mapeamento do Burnout em Estudantes Universitários"</strong>, conduzida pela Profa. Dra. Lucia Kratz (CRP 09/20590), vinculada ao Centro Universitário Facunicamps.</p>
+
+    <p style="font-weight:700;color:var(--txt);margin:14px 0 6px">1. Objetivo</p>
+    <p style="margin-bottom:10px">Avaliar o nível de burnout de estudantes universitários por meio das 12 fases do modelo de Freudenberger &amp; North, com fins de pesquisa científica e orientação psicoeducacional.</p>
+
+    <p style="font-weight:700;color:var(--txt);margin:14px 0 6px">2. Procedimentos</p>
+    <p style="margin-bottom:10px">A participação consiste no preenchimento de um questionário digital com duração estimada de 6 a 10 minutos. As respostas serão registradas de forma automática em banco de dados seguro.</p>
+
+    <p style="font-weight:700;color:var(--txt);margin:14px 0 6px">3. Riscos e Benefícios</p>
+    <p style="margin-bottom:10px">Os riscos são mínimos, limitados a eventual desconforto emocional ao refletir sobre situações de estresse. Como benefício direto, você receberá um laudo individual com orientações. Os dados consolidados do grupo contribuirão para pesquisa científica sobre saúde mental universitária.</p>
+
+    <p style="font-weight:700;color:var(--txt);margin:14px 0 6px">4. Confidencialidade e LGPD</p>
+    <p style="margin-bottom:10px">Seus dados pessoais serão tratados com estrita confidencialidade, conforme a <strong style="color:var(--txt)">Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>. Os dados coletados incluem nome, idade, gênero, curso e WhatsApp, utilizados exclusivamente para identificação dos resultados e envio do laudo. Nenhuma informação será compartilhada com terceiros ou divulgada publicamente de forma identificada.</p>
+
+    <p style="font-weight:700;color:var(--txt);margin:14px 0 6px">5. Voluntariedade</p>
+    <p style="margin-bottom:10px">A participação é <strong style="color:var(--txt)">totalmente voluntária</strong>. Você pode recusar-se a participar ou interromper a qualquer momento, sem qualquer prejuízo acadêmico ou institucional.</p>
+
+    <p style="font-weight:700;color:var(--txt);margin:14px 0 6px">6. Contato</p>
+    <p style="margin-bottom:14px">Dúvidas: <strong style="color:var(--txt)">Profa. Dra. Lucia Kratz</strong> — CRP 09/20590<br>📧 contato@aequipe.com.br &nbsp;·&nbsp; 📱 (62) 99154-6757</p>
+
+    <div style="background:var(--sur2);border:1.5px solid var(--bor);border-radius:12px;padding:14px 16px;margin-top:6px">
+      <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;font-size:13px;color:var(--txt);font-weight:600;line-height:1.5">
+        <input type="checkbox" id="tcle-check" style="width:20px;height:20px;margin-top:1px;flex-shrink:0;accent-color:var(--bm)" onchange="tcleCheck()">
+        <span>Li, compreendi e concordo em participar voluntariamente desta pesquisa, autorizando o uso dos meus dados conforme descrito acima.</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-sec" onclick="go(1)" style="flex:none;padding:12px 20px">← Voltar</button>
+    <button class="btn btn-cta" id="btn-tcle-ok" onclick="go(2)" disabled style="opacity:.4;cursor:not-allowed">Concordo e Prosseguir →</button>
   </div>
 </div>
 
