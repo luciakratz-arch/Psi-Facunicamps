@@ -380,6 +380,11 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 
 </div>
 
+<!-- RODAPÉ -->
+<div style="text-align:center;padding:24px 16px 40px;margin-top:8px">
+  <a href="painel.html" style="font-size:11px;color:var(--tf);text-decoration:none;font-weight:600;letter-spacing:.3px;opacity:.6">🎓 Acesso Professora</a>
+</div>
+
 <script>
 const ST={nome:'',idade:0,genero:'',estado_civil:'',vinculo:'',curso:'',tipo_trabalho:'',profissao:'',zap:'',codigo:'',scores:{}};
 
@@ -677,7 +682,8 @@ function renderRelatorio(codigo,registros,isAdmin){
   const trabalhoLbl=Object.entries(trabalhos).map(([k,v])=>k+': '+v).join(' · ');
   const fasesCrit=fasePcts.filter(f=>f.pct>=60);
   const el=document.getElementById('relatorio-area');
-  let html='<div class="res-hero"><h2>&#128202; Relatório do Grupo</h2><p>Código: <strong>'+codigo+'</strong> · '+n+' participante'+(n>1?'s':'')+'</p></div>';
+  let html='<button class="btn btn-ghost" onclick="go(5)" style="margin-bottom:10px">&#8592; Voltar</button>';
+  html+='<div class="res-hero"><h2>&#128202; Relatório do Grupo</h2><p>Código: <strong>'+codigo+'</strong> · '+n+' participante'+(n>1?'s':'')+'</p></div>';
   html+='<div class="rel-stats"><div class="rel-stat"><div class="rel-stat-num">'+n+'</div><div class="rel-stat-lbl">Respostas</div></div><div class="rel-stat"><div class="rel-stat-num" style="color:#27AE60">'+dist.ok+'</div><div class="rel-stat-lbl">Baixo risco</div></div><div class="rel-stat"><div class="rel-stat-num" style="color:#C0392B">'+(dist.mod+dist.hi)+'</div><div class="rel-stat-lbl">Atenção/Alto</div></div></div>';
   html+='<div class="sc"><div class="sc-ttl">&#128203; Perfil dos Participantes</div>';
   html+='<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--tf);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Vínculo</div><div style="font-size:13px;color:var(--ts)">'+vinculoLbl+'</div></div>';
