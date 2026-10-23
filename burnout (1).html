@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mapa do Burnout — Facunicamps</title>
+<meta name="description" content="Avalie seu risco de burnout pelas 12 fases de Freudenberger. Instrumento gratuito da Facunicamps.">
+<meta property="og:title" content="Mapa do Burnout — Facunicamps">
+<meta property="og:description" content="Descubra em qual das 12 fases do burnout você se encontra. Instrumento científico gratuito.">
+<meta property="og:image" content="https://luciakratz-arch.github.io/FACUNICAMPSburnout/og-image.png">
+<meta property="og:url" content="https://luciakratz-arch.github.io/FACUNICAMPSburnout/">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bd:#0D2B6B;--bm:#1A52B8;--bl:#3A7FD4;
+  --red:#8B1A1A;--red2:#C0392B;
+  --gold:#D4A017;--gold2:#F0C030;
+  --bg:#EEF3FB;--sur:#FFFFFF;--sur2:#E8F0FB;
+  --bor:#C8D8EF;--txt:#1A2A40;--ts:#4A6080;--tf:#8AA0B8;--inp:#FFFFFF;
+  --ff1:'Montserrat',sans-serif;--ff2:'Inter',sans-serif;
+  --sh1:0 2px 8px rgba(13,43,107,.08);--sh2:0 4px 20px rgba(13,43,107,.14);--sh3:0 8px 36px rgba(13,43,107,.2);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0C1720;--sur:#13233A;--sur2:#192E47;--bor:#243D5C;--txt:#E4EEF8;--ts:#7AA0C0;--tf:#4A6A8A;--inp:#192E47;
+}}
+:root[data-theme="dark"]{--bg:#0C1720;--sur:#13233A;--sur2:#192E47;--bor:#243D5C;--txt:#E4EEF8;--ts:#7AA0C0;--tf:#4A6A8A;--inp:#192E47;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{min-height:100%;background:var(--bg);color:var(--txt);font-family:var(--ff2);font-size:15px;line-height:1.6;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);-webkit-tap-highlight-color:transparent}
+button{cursor:pointer;font-family:var(--ff2)}
+input,select,textarea{font-family:var(--ff2);font-size:16px}
+
+.hdr{background:linear-gradient(135deg,var(--bd),var(--bm));padding:11px 16px 13px;display:flex;align-items:center;gap:12px;border-bottom:4px solid var(--gold);position:sticky;top:env(safe-area-inset-top,0);z-index:200;box-shadow:var(--sh2)}
+.hdr-shield{width:40px;height:40px;flex-shrink:0}
+.hdr-shield svg{width:40px;height:40px}
+.hdr-text{display:flex;flex-direction:column}
+.hdr-name{font-family:var(--ff1);font-weight:900;font-size:17px;color:#fff;letter-spacing:.5px;line-height:1.1}
+.hdr-sub{font-size:9px;color:rgba(255,255,255,.55);letter-spacing:.5px;font-weight:600}
+.hdr-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap}
+
+.prog-wrap{background:var(--sur);padding:8px 16px;border-bottom:1px solid var(--bor);position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:199}
+.prog-bg{height:6px;background:var(--bor);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--bm));border-radius:3px;transition:width .4s ease}
+.prog-lbl{font-size:11px;color:var(--tf);text-align:right;margin-top:3px;font-weight:600}
+
+.main{max-width:700px;margin:0 auto;padding:20px 16px 56px}
+.step{display:none}
+.step.on{display:block;animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.hero{background:linear-gradient(135deg,var(--bd),var(--bm));border-radius:20px;padding:28px 22px;text-align:center;color:#fff;margin-bottom:18px;box-shadow:var(--sh3);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-30px;right:-30px;width:180px;height:180px;background:rgba(255,255,255,.04);border-radius:50%}
+.hero-stars{font-size:20px;letter-spacing:4px;margin-bottom:10px;display:block}
+.hero .icon{font-size:52px;margin-bottom:10px}
+.hero h1{font-family:var(--ff1);font-size:22px;font-weight:900;margin-bottom:8px;text-wrap:balance}
+.hero p{font-size:14px;color:rgba(255,255,255,.82);line-height:1.55}
+
+.sc{background:var(--sur);border:1px solid var(--bor);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:var(--sh1)}
+.sc-ttl{font-family:var(--ff1);font-size:12px;font-weight:700;color:var(--bm);margin-bottom:12px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.5px}
+
+.fg{margin-bottom:14px}
+.lbl{display:block;font-size:12px;font-weight:600;color:var(--ts);margin-bottom:5px}
+.inp,.sel{width:100%;padding:11px 13px;border:1.5px solid var(--bor);border-radius:12px;background:var(--inp);color:var(--txt);font-size:16px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.inp:focus,.sel:focus{border-color:var(--bm);box-shadow:0 0 0 3px rgba(26,82,184,.14)}
+.sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%234A6080' fill='none' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px}
+
+.codigo-box{background:rgba(26,82,184,.06);border:2px solid var(--bm);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.codigo-box .lbl{color:var(--bm);font-size:13px;font-weight:700}
+.codigo-box p{font-size:12px;color:var(--ts);margin-bottom:8px;line-height:1.5}
+.inp-codigo{letter-spacing:2px;font-weight:700;text-transform:uppercase;font-family:var(--ff1)}
+
+.lgpd-box{background:var(--sur2);border:1px solid var(--bor);border-radius:12px;padding:13px 15px;font-size:12px;color:var(--ts);line-height:1.6;margin-bottom:12px}
+.lgpd-box h4{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:3px}
+.lgpd-ck{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:16px}
+.lgpd-ck input{width:18px;height:18px;flex-shrink:0;accent-color:var(--bm);margin-top:2px}
+.lgpd-ck span{font-size:13px;color:var(--ts);line-height:1.5}
+
+.btn-row{display:flex;gap:10px;margin-top:20px}
+.btn{flex:1;min-height:52px;padding:13px 18px;border:none;border-radius:12px;font-family:var(--ff1);font-weight:700;font-size:15px;letter-spacing:.3px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(.97)}
+.btn-pri{background:linear-gradient(135deg,var(--bd),var(--bm));color:#fff;box-shadow:var(--sh2)}
+.btn-sec{background:var(--sur);color:var(--ts);border:1.5px solid var(--bor)}
+.btn-ghost{background:transparent;color:var(--bm);font-size:14px;min-height:44px;flex:none;padding:10px 14px;border:none}
+.btn-cta{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;box-shadow:0 4px 16px rgba(139,26,26,.35)}
+.btn-wa{background:#25D366;color:#fff;box-shadow:0 4px 16px rgba(37,211,102,.28);font-size:14px}
+.btn-rel{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bd);font-size:14px}
+
+.fase-block{background:var(--sur);border:1.5px solid var(--bor);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--sh1)}
+.fase-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.fase-num-badge{background:linear-gradient(135deg,var(--bd),var(--bm));color:#fff;font-family:var(--ff1);font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.fase-nome{font-family:var(--ff1);font-size:15px;font-weight:800;color:var(--txt)}
+.fase-desc{font-size:12px;color:var(--ts);margin-bottom:13px;line-height:1.5;font-style:italic;border-left:3px solid var(--bor);padding-left:10px}
+
+.lk-item{background:var(--sur2);border:1px solid var(--bor);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.lk-q{font-size:13px;color:var(--txt);line-height:1.5;margin-bottom:10px;font-weight:500}
+.lk-scale{display:flex;gap:5px}
+.lk-btn{flex:1;min-width:0;height:42px;border:2px solid var(--bor);border-radius:10px;background:var(--sur);color:var(--ts);font-family:var(--ff1);font-weight:700;font-size:16px;transition:all .18s;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lk-btn:hover{border-color:var(--bm);color:var(--bm)}
+.lk-btn.sel{background:linear-gradient(135deg,var(--bd),var(--bm));border-color:transparent;color:#fff;transform:scale(1.06);box-shadow:var(--sh1)}
+.lk-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--tf);margin-top:5px;padding:0 2px}
+
+.res-hero{background:linear-gradient(135deg,var(--bd),var(--bm));border-radius:20px;padding:24px 20px;text-align:center;color:#fff;margin-bottom:18px;box-shadow:var(--sh3)}
+.res-hero h2{font-family:var(--ff1);font-size:20px;font-weight:900;margin-bottom:6px}
+.res-hero p{font-size:13px;color:rgba(255,255,255,.8)}
+
+.nivel-card{border-radius:16px;padding:18px 20px;margin-bottom:14px;box-shadow:var(--sh2)}
+.nivel-card.ok{background:linear-gradient(135deg,#EDFAF3,#C8F0DA);border:2px solid #27AE60;color:#1A5E38}
+.nivel-card.mod{background:linear-gradient(135deg,#FFF4E8,#FFD9A0);border:2px solid #E67E22;color:#7A3A00}
+.nivel-card.hi{background:linear-gradient(135deg,#FFF0F0,#FFB0B0);border:2px solid #C0392B;color:#6A0A0A}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .nivel-card.ok{background:linear-gradient(135deg,#082318,#0E3A22);color:#7EE8A0;border-color:#27AE60}
+  :root:not([data-theme="light"]) .nivel-card.mod{background:linear-gradient(135deg,#2A1A08,#3A2510);color:#FFD080;border-color:#E67E22}
+  :root:not([data-theme="light"]) .nivel-card.hi{background:linear-gradient(135deg,#2A0808,#3A1010);color:#FF9090;border-color:#C0392B}
+}
+:root[data-theme="dark"] .nivel-card.ok{background:linear-gradient(135deg,#082318,#0E3A22);color:#7EE8A0;border-color:#27AE60}
+:root[data-theme="dark"] .nivel-card.mod{background:linear-gradient(135deg,#2A1A08,#3A2510);color:#FFD080;border-color:#E67E22}
+:root[data-theme="dark"] .nivel-card.hi{background:linear-gradient(135deg,#2A0808,#3A1010);color:#FF9090;border-color:#C0392B}
+
+.nivel-ttl{font-family:var(--ff1);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.nivel-val{font-family:var(--ff1);font-size:26px;font-weight:900;margin-bottom:4px}
+.nivel-desc{font-size:13px;line-height:1.55}
+
+.fase-res-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bor)}
+.fase-res-row:last-child{border-bottom:none}
+.fase-res-num{font-family:var(--ff1);font-size:10px;font-weight:700;color:var(--tf);min-width:22px}
+.fase-res-nome{font-size:12px;font-weight:600;color:var(--txt);min-width:120px;flex:1}
+.fase-res-bar-wrap{flex:2;height:8px;background:var(--bor);border-radius:4px;overflow:hidden}
+.fase-res-bar{height:100%;border-radius:4px;transition:width .8s ease}
+.fase-res-pct{font-size:12px;font-weight:700;min-width:34px;text-align:right}
+
+.share-sec{background:var(--sur);border:1px solid var(--bor);border-radius:16px;padding:18px;margin-bottom:14px;text-align:center;box-shadow:var(--sh1)}
+.share-sec h3{font-family:var(--ff1);font-size:15px;font-weight:800;color:var(--txt);margin-bottom:6px}
+.share-sec p{font-size:13px;color:var(--ts);margin-bottom:14px}
+.share-btns{display:flex;flex-direction:column;gap:10px}
+
+.rel-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.rel-stat{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:12px;text-align:center;box-shadow:var(--sh1)}
+.rel-stat-num{font-family:var(--ff1);font-size:24px;font-weight:900;color:var(--bm)}
+.rel-stat-lbl{font-size:11px;color:var(--ts);font-weight:600}
+
+.rel-row{display:grid;grid-template-columns:28px 1fr 80px 44px;gap:8px;align-items:center;padding:8px 12px;border-radius:10px;margin-bottom:6px}
+.rel-row.ok{background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2)}
+.rel-row.mod{background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2)}
+.rel-row.hi{background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.2)}
+.rel-row-bar-wrap{height:8px;background:var(--bor);border-radius:4px;overflow:hidden}
+.rel-row-bar{height:100%;border-radius:4px}
+
+.rel-form{background:var(--sur);border:2px solid var(--gold);border-radius:16px;padding:20px;box-shadow:var(--sh2)}
+.rel-form h2{font-family:var(--ff1);font-size:18px;font-weight:900;color:var(--txt);margin-bottom:8px}
+.rel-form p{font-size:13px;color:var(--ts);margin-bottom:16px;line-height:1.55}
+#msg-rel{font-size:13px;color:var(--red2);margin-top:8px;text-align:center;font-weight:600;display:none}
+
+@media(max-width:480px){
+  .hero h1{font-size:19px}
+  .btn{font-size:14px}
+  .lk-btn{height:38px;font-size:15px}
+  .rel-stats{gap:8px}
+  .rel-stat-num{font-size:20px}
+  .rel-row{grid-template-columns:22px 1fr 60px 36px}
+  .fase-res-nome{min-width:80px}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-shield">
+    <svg viewBox="0 0 80 88" xmlns="http://www.w3.org/2000/svg" width="44" height="44">
+      <defs>
+        <linearGradient id="ug" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#4A9FE8"/>
+          <stop offset="100%" stop-color="#0D2B6B"/>
+        </linearGradient>
+      </defs>
+      <!-- 6 orange stars on top -->
+      <text x="40" y="10" text-anchor="middle" font-size="10" fill="#F5820A" letter-spacing="2">★★★★★★</text>
+      <!-- Shield outline (dark red border) -->
+      <path d="M40 16 L76 26 L76 54 Q76 76 40 86 Q4 76 4 54 L4 26 Z" fill="#8B1A1A"/>
+      <!-- Shield fill (white) -->
+      <path d="M40 19 L73 28 L73 54 Q73 73 40 83 Q7 73 7 54 L7 28 Z" fill="white"/>
+      <!-- Interlinked U+O symbol -->
+      <!-- Outer O shape (right) -->
+      <path d="M46 34 Q58 34 58 48 Q58 62 46 62 L42 62 Q54 62 54 48 Q54 34 42 34 Z" fill="url(#ug)" opacity="0.9"/>
+      <!-- U shape (left, overlapping) -->
+      <path d="M22 34 L22 52 Q22 64 34 64 Q46 64 46 52 L46 34 L42 34 L42 52 Q42 60 34 60 Q26 60 26 52 L26 34 Z" fill="url(#ug)"/>
+      <!-- Right pillar of O -->
+      <rect x="50" y="34" width="4" height="28" rx="2" fill="url(#ug)" opacity="0.85"/>
+    </svg>
+  </div>
+  <div class="hdr-text">
+    <div class="hdr-name">FACUNICAMPS</div>
+    <div class="hdr-sub">FACULDADE UNICAMPS</div>
+  </div>
+  <div class="hdr-badge">&#128293; Mapa do Burnout</div>
+</header>
+
+<div class="prog-wrap" id="prog-wrap" style="display:none">
+  <div class="prog-bg"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+  <div class="prog-lbl" id="prog-lbl">Etapa 1 de 3</div>
+</div>
+
+<div class="main">
+
+<!-- S1: Boas-vindas -->
+<div class="step on" id="s1">
+  <div class="hero">
+    <span class="hero-stars">&#9733; &#9733; &#9733; &#9733; &#9733;</span>
+    <div class="icon">&#128293;</div>
+    <h1>Mapa do Burnout</h1>
+    <p>Identifique em qual das 12 fases do burnout você está, com base no modelo de Freudenberger &amp; North. Rápido, científico e gratuito.</p>
+  </div>
+  <div class="sc">
+    <div class="sc-ttl">&#128208; Como funciona</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:12px;font-size:14px"><span style="font-size:22px">&#128203;</span><span><strong>Identificação</strong> — dados pessoais e código do grupo</span></div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:14px"><span style="font-size:22px">&#128293;</span><span><strong>12 Fases do Burnout</strong> — avalie cada fase honestamente</span></div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:14px"><span style="font-size:22px">&#128202;</span><span><strong>Laudo individual</strong> + relatório consolidado do grupo</span></div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:14px"><span style="font-size:22px">&#9201;</span><span>Dura cerca de <strong>6 a 10 minutos</strong></span></div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-cta" onclick="go(2)">Começar &#8594;</button>
+  </div>
+  <div style="margin-top:16px;text-align:center">
+    <button class="btn-ghost btn" style="flex:none;display:inline-flex" onclick="go(5)">&#128202; Ver Relatório do Grupo</button>
+  </div>
+</div>
+
+<!-- S2: Identificação -->
+<div class="step" id="s2">
+  <div class="sc">
+    <div class="sc-ttl">&#128203; Dados Pessoais</div>
+    <div class="fg"><label class="lbl">Nome completo *</label><input class="inp" id="nome" type="text" placeholder="Seu nome completo" autocomplete="name"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="lbl">Idade *</label><input class="inp" id="idade" type="number" placeholder="Ex: 28" min="16" max="80"></div>
+      <div class="fg"><label class="lbl">Gênero *</label>
+        <select class="sel" id="genero">
+          <option value="">Selecione</option>
+          <option>Masculino</option>
+          <option>Feminino</option>
+          <option>Não binário</option>
+          <option>Prefiro não informar</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="lbl">Estado civil *</label>
+      <select class="sel" id="estado_civil">
+        <option value="">Selecione</option>
+        <option>Solteiro(a)</option>
+        <option>Casado(a)</option>
+        <option>União estável</option>
+        <option>Divorciado(a)</option>
+        <option>Viúvo(a)</option>
+      </select>
+    </div>
+    <div class="fg"><label class="lbl">WhatsApp *</label><input class="inp" id="zap" type="tel" placeholder="(19) 9 xxxx-xxxx" autocomplete="tel"></div>
+  </div>
+
+  <div class="sc">
+    <div class="sc-ttl">&#127979; Vínculo com a Facunicamps</div>
+    <div class="fg"><label class="lbl">Vínculo *</label>
+      <select class="sel" id="vinculo" onchange="atualizarCamposVinculo()">
+        <option value="">Selecione</option>
+        <option>Aluno(a)</option>
+        <option>Professor(a)</option>
+        <option>Funcionário(a)</option>
+        <option>Comunidade externa</option>
+      </select>
+    </div>
+    <div id="bloco-curso" style="display:none">
+      <div class="fg"><label class="lbl">Curso *</label>
+        <select class="sel" id="curso" onchange="atualizarOutroCurso()">
+          <option value="">Selecione o curso</option>
+          <optgroup label="Área da Saúde">
+            <option>Biomedicina</option>
+            <option>Enfermagem</option>
+            <option>Farmácia</option>
+            <option>Fisioterapia</option>
+            <option>Medicina Veterinária (lançamento)</option>
+            <option>Nutrição</option>
+            <option>Odontologia</option>
+            <option>Estética e Cosmética</option>
+            <option>Educação Física — Bacharelado</option>
+            <option>Educação Física — Licenciatura</option>
+          </optgroup>
+          <optgroup label="Área Humana e Social">
+            <option>Administração</option>
+            <option>Ciências Contábeis</option>
+            <option>Direito</option>
+            <option>Psicologia</option>
+            <option>Pedagogia</option>
+            <option>Serviço Social</option>
+            <option>Publicidade e Propaganda</option>
+            <option>Jornalismo</option>
+          </optgroup>
+          <optgroup label="Tecnologia e Engenharia">
+            <option>Inteligência Artificial</option>
+            <option>Ciência da Computação</option>
+            <option>Análise e Desenvolvimento de Sistemas (ADS)</option>
+            <option>Redes de Computadores / Banco de Dados</option>
+            <option>Engenharia Civil</option>
+            <option>Agronomia</option>
+            <option>Arquitetura e Urbanismo</option>
+            <option>Design de Interiores</option>
+          </optgroup>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+      <div id="outro-curso-box" style="display:none" class="fg">
+        <label class="lbl">Qual curso? *</label>
+        <input class="inp" id="outro-curso" type="text" placeholder="Digite o nome do curso">
+      </div>
+    </div>
+  </div>
+
+  <div class="sc">
+    <div class="sc-ttl">&#128188; Situação Profissional</div>
+    <div class="fg"><label class="lbl">Tipo de trabalho *</label>
+      <select class="sel" id="tipo_trabalho" onchange="atualizarOutroTrabalho()">
+        <option value="">Selecione</option>
+        <option>CLT (empregado)</option>
+        <option>Autônomo / Freelancer</option>
+        <option>Empresário(a)</option>
+        <option>Servidor(a) público(a)</option>
+        <option>Estagiário(a)</option>
+        <option>Somente estudante</option>
+        <option>Desempregado(a)</option>
+        <option value="outro-trab">Outro</option>
+      </select>
+    </div>
+    <div id="outro-trab-box" style="display:none" class="fg">
+      <label class="lbl">Qual situação? *</label>
+      <input class="inp" id="outro-trab" type="text" placeholder="Descreva sua situação de trabalho">
+    </div>
+    <div class="fg"><label class="lbl">Área de atuação / Profissão</label>
+      <input class="inp" id="profissao" type="text" placeholder="Ex: Psicóloga, Analista de TI, Professora…">
+    </div>
+  </div>
+
+  <div class="codigo-box">
+    <label class="lbl">&#127991; Código do Grupo *</label>
+    <p>Informe o código fornecido pelo(a) professor(a) ou coordenador(a). Ele vincula sua resposta ao grupo para o relatório coletivo.</p>
+    <input class="inp inp-codigo" id="codigo" type="text" maxlength="20" placeholder="Ex: TURMA2024A" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
+  </div>
+  <div class="lgpd-box">
+    <h4>&#128274; Privacidade e LGPD</h4>
+    <p>Seus dados são usados exclusivamente para este instrumento e para o relatório do grupo. Não serão compartilhados com terceiros. Armazenamento seguro conforme Lei nº 13.709/2018.</p>
+  </div>
+  <label class="lgpd-ck"><input type="checkbox" id="lgpd"><span>Autorizo o uso dos meus dados para fins desta avaliação da Facunicamps.</span></label>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button>
+    <button class="btn btn-pri" onclick="valStep2()">Próximo &#8594;</button>
+  </div>
+</div>
+
+<!-- S3: 12 Fases -->
+<div class="step" id="s3">
+  <div style="background:var(--sur2);border:1px solid var(--bor);border-radius:14px;padding:12px 16px;margin-bottom:16px">
+    <div style="font-family:var(--ff1);font-size:12px;font-weight:700;color:var(--bm);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px">&#128293; As 12 Fases do Burnout</div>
+    <div style="font-size:13px;color:var(--ts);line-height:1.5">Para cada afirmação, avalie o quanto ela descreve você <strong>atualmente</strong>. Use a escala de <strong>1 = não me identifico</strong> a <strong>5 = me identifico muito</strong>.</div>
+  </div>
+  <div id="lk-fases"></div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="go(2)">&#8592; Voltar</button>
+    <button class="btn btn-cta" onclick="valStep3()">Ver Meu Resultado &#128293;</button>
+  </div>
+</div>
+
+<!-- S4: Resultado individual -->
+<div class="step" id="s4">
+  <div id="resultado-area"></div>
+</div>
+
+<!-- S5: Acesso ao relatório do grupo -->
+<div class="step" id="s5">
+  <div class="rel-form">
+    <h2>&#128202; Relatório do Grupo</h2>
+    <p>Informe o código do grupo para acessar o relatório consolidado com os resultados de todos os participantes deste código.</p>
+    <label class="lbl">Código do Grupo</label>
+    <input class="inp inp-codigo" id="codigo-rel" type="text" maxlength="20" placeholder="Ex: TURMA2024A" oninput="this.value=this.value.toUpperCase()">
+    <div id="msg-rel">Código não encontrado ou sem respostas registradas ainda.</div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button>
+      <button class="btn btn-rel" id="btn-ver-rel" onclick="carregarRelatorio()">&#128202; Ver Relatório</button>
+    </div>
+  </div>
+</div>
+
+<!-- S6: Relatório do grupo (dados) -->
+<div class="step" id="s6">
+  <div id="relatorio-area"></div>
+</div>
+
+</div>
+
+<script>
+const ST={nome:'',idade:0,genero:'',estado_civil:'',vinculo:'',curso:'',tipo_trabalho:'',profissao:'',zap:'',codigo:'',scores:{}};
+
+function atualizarCamposVinculo(){
+  const v=document.getElementById('vinculo').value;
+  const bloco=document.getElementById('bloco-curso');
+  bloco.style.display=(v==='Aluno(a)'||v==='Professor(a)')?'block':'none';
+}
+function atualizarOutroCurso(){
+  const c=document.getElementById('curso').value;
+  document.getElementById('outro-curso-box').style.display=(c==='outro')?'block':'none';
+}
+function atualizarOutroTrabalho(){
+  const t=document.getElementById('tipo_trabalho').value;
+  document.getElementById('outro-trab-box').style.display=(t==='outro-trab')?'block':'none';
+}
+
+const FASES=[
+  {num:1,nome:'Compulsão de se Provar',icon:'&#128170;',
+   desc:'Necessidade intensa de demonstrar valor, assumir mais do que consegue, dificuldade de descansar.',
+   itens:['Sinto que preciso constantemente provar meu valor e competência para os outros.','Fico desconfortável ou culpado(a) quando paro de produzir ou descanso.','Tenho dificuldade de dizer "não" a novas responsabilidades ou pedidos.']},
+  {num:2,nome:'Dedicação Intensa',icon:'&#9889;',
+   desc:'Trabalho ou estudo excessivo como norma; dificuldade de desconectar mentalmente.',
+   itens:['Trabalho ou estudo mais horas do que o recomendável, e isso é frequente.','Penso em tarefas e obrigações mesmo nos momentos de folga ou lazer.','Coloco o trabalho ou os estudos acima de praticamente tudo na minha vida.']},
+  {num:3,nome:'Negligência das Necessidades',icon:'&#128564;',
+   desc:'Sono, alimentação e cuidados pessoais ficam em segundo plano.',
+   itens:['Tenho dormido menos do que preciso por causa das minhas obrigações.','Deixo de me alimentar bem ou pulo refeições por falta de tempo.','Abandonei atividades de lazer ou autocuidado que antes faziam parte da minha rotina.']},
+  {num:4,nome:'Repressão de Conflitos',icon:'&#129296;',
+   desc:'Conflitos são percebidos mas evitados, gerando tensão interna crescente.',
+   itens:['Evito conflitos mesmo quando sei que eles precisam ser resolvidos.','Sinto uma tensão interna difusa que não consigo identificar claramente.','Aceito situações injustas em silêncio para não gerar problemas.']},
+  {num:5,nome:'Revisão dos Valores',icon:'&#127917;',
+   desc:'Valores e relacionamentos importantes são negligenciados em nome das obrigações.',
+   itens:['Tenho deixado de lado pessoas importantes por falta de tempo ou energia.','Sinto que perdi contato com o que realmente importa para mim.','Minha vida se resume quase exclusivamente a obrigações e responsabilidades.']},
+  {num:6,nome:'Negação dos Problemas',icon:'&#128584;',
+   desc:'Irritabilidade, cinismo e responsabilização do entorno pelos próprios problemas.',
+   itens:['Fico irritado(a) com facilidade e tendo a culpar o ambiente ou as pessoas ao redor.','Tenho pensamentos de que os outros não entendem ou não me apoiam como deveriam.','Minimizo meus problemas dizendo "é assim mesmo" ou "todo mundo passa por isso".']},
+  {num:7,nome:'Recolhimento',icon:'&#128026;',
+   desc:'Isolamento social progressivo, perda de engajamento e esperança.',
+   itens:['Tenho me afastado das pessoas, mesmo daquelas de quem gosto.','Não tenho energia ou vontade de socializar, mesmo quando tenho oportunidade.','Prefiro ficar sozinho(a) e evito situações de interação social.']},
+  {num:8,nome:'Mudanças Evidentes no Comportamento',icon:'&#9888;',
+   desc:'Terceiros percebem mudanças. Agressividade ou apatia se intensificam.',
+   itens:['Pessoas próximas comentaram que estou diferente, mais fechado(a) ou irritado(a).','Tenho reações exageradas ou desproporcionais a pequenas situações.','Percebo em mim uma apatia crescente ou explosões de humor fora do normal.']},
+  {num:9,nome:'Despersonalização',icon:'&#129302;',
+   desc:'Funcionamento no automático, sem emoção ou senso de presença.',
+   itens:['Sinto que estou funcionando no "piloto automático", como se não estivesse presente.','Tenho dificuldade de me conectar emocionalmente com as pessoas ao meu redor.','Me sinto como um observador(a) distante da minha própria vida.']},
+  {num:10,nome:'Vazio Interior',icon:'&#128307;',
+   desc:'Sensação de esvaziamento profundo; busca de preenchimento em excessos.',
+   itens:['Sinto um vazio interior difícil de descrever ou explicar.','Busco distrações excessivas (redes sociais, comida, álcool, compras) para preencher algo.','Nada parece me satisfazer ou trazer prazer como antes.']},
+  {num:11,nome:'Depressão',icon:'&#127761;',
+   desc:'Desesperança, esgotamento profundo, perda de sentido e motivação.',
+   itens:['Sinto-me sem esperança em relação ao futuro.','Tenho muita dificuldade de encontrar motivação ou sentido para o dia a dia.','Passo por episódios de tristeza intensa ou desesperança que me paralisam.']},
+  {num:12,nome:'Síndrome do Burnout',icon:'&#128165;',
+   desc:'Colapso físico e mental. Esgotamento total que exige intervenção profissional.',
+   itens:['Sinto que cheguei ao limite — não consigo mais continuar como está.','Tenho sintomas físicos frequentes como exaustão extrema, dores ou adoecimentos recorrentes.','Sinto que preciso urgentemente de ajuda profissional, mas não sei por onde começar.']},
+];
+const FASE_LABELS=['Não me identifico','Identifico pouco','Às vezes','Identifico bastante','Me identifico muito'];
+
+function go(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s'+n).classList.add('on');
+  const showProg=(n>=2&&n<=4);
+  document.getElementById('prog-wrap').style.display=showProg?'':'none';
+  if(showProg){
+    const pcts={2:10,3:50,4:100};
+    const lbls={2:'Etapa 1 de 3 — Identificação',3:'Etapa 2 de 3 — Avaliação',4:'Etapa 3 de 3 — Resultado ✅'};
+    document.getElementById('prog').style.width=(pcts[n]||0)+'%';
+    document.getElementById('prog-lbl').textContent=lbls[n]||'';
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderFases(){
+  const el=document.getElementById('lk-fases');
+  el.innerHTML=FASES.map(fase=>{
+    const itens=fase.itens.map((q,i)=>{
+      const id='f'+fase.num+'_'+i;
+      const btns=[1,2,3,4,5].map(v=>
+        '<button class="lk-btn" data-id="'+id+'" data-val="'+v+'" onclick="pick(this,\''+id+'\','+v+')">'+v+'</button>'
+      ).join('');
+      return '<div class="lk-item"><div class="lk-q">'+q+'</div><div class="lk-scale">'+btns+'</div><div class="lk-labels"><span>'+FASE_LABELS[0]+'</span><span>'+FASE_LABELS[4]+'</span></div></div>';
+    }).join('');
+    return '<div class="fase-block"><div class="fase-hdr"><span class="fase-num-badge">FASE '+fase.num+'</span><span class="fase-nome">'+fase.icon+' '+fase.nome+'</span></div><div class="fase-desc">'+fase.desc+'</div>'+itens+'</div>';
+  }).join('');
+}
+
+function pick(btn,id,val){
+  document.querySelectorAll('[data-id="'+id+'"]').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  ST.scores[id]=val;
+}
+
+function valStep2(){
+  const n=document.getElementById('nome').value.trim();
+  const a=document.getElementById('idade').value;
+  const g=document.getElementById('genero').value;
+  const ec=document.getElementById('estado_civil').value;
+  const v=document.getElementById('vinculo').value;
+  const z=document.getElementById('zap').value.trim();
+  const c=document.getElementById('codigo').value.trim();
+  const tt=document.getElementById('tipo_trabalho').value;
+  const l=document.getElementById('lgpd').checked;
+  if(!n){alert('Por favor, informe seu nome.');return}
+  if(!a||a<16||a>80){alert('Informe uma idade válida (16–80).');return}
+  if(!g){alert('Selecione seu gênero.');return}
+  if(!ec){alert('Selecione seu estado civil.');return}
+  if(!v){alert('Selecione seu vínculo.');return}
+  if(v==='Aluno(a)'||v==='Professor(a)'){
+    const cur=document.getElementById('curso').value;
+    if(!cur){alert('Selecione o curso.');return}
+    if(cur==='outro'&&!document.getElementById('outro-curso').value.trim()){alert('Informe o nome do curso.');return}
+    ST.curso=cur==='outro'?document.getElementById('outro-curso').value.trim():cur;
+  } else { ST.curso=''; }
+  if(!tt){alert('Selecione o tipo de trabalho.');return}
+  if(tt==='outro-trab'&&!document.getElementById('outro-trab').value.trim()){alert('Descreva sua situação de trabalho.');return}
+  if(!z){alert('Por favor, informe seu WhatsApp.');return}
+  if(!c){alert('Por favor, informe o código do grupo.');return}
+  if(!l){alert('Autorize o uso dos dados para continuar.');return}
+  ST.nome=n;ST.idade=Number(a);ST.genero=g;ST.estado_civil=ec;ST.vinculo=v;
+  ST.tipo_trabalho=tt==='outro-trab'?document.getElementById('outro-trab').value.trim():tt;
+  ST.profissao=document.getElementById('profissao').value.trim();
+  ST.zap=z;ST.codigo=c.toUpperCase();
+  renderFases();
+  go(3);
+}
+
+function valStep3(){
+  for(const fase of FASES){
+    for(let i=0;i<fase.itens.length;i++){
+      if(ST.scores['f'+fase.num+'_'+i]===undefined){
+        alert('Por favor, responda todas as questões da Fase '+fase.num+' — '+fase.nome+'.');
+        const blocos=document.querySelectorAll('.fase-block');
+        if(blocos[fase.num-1]) blocos[fase.num-1].scrollIntoView({behavior:'smooth',block:'center'});
+        return;
+      }
+    }
+  }
+  calcularEMostrar();
+}
+
+function calcular(){
+  return FASES.map(fase=>{
+    let soma=0;
+    for(let i=0;i<fase.itens.length;i++) soma+=ST.scores['f'+fase.num+'_'+i];
+    return {fase,media:soma/fase.itens.length,pct:Math.round((soma/fase.itens.length-1)/4*100)};
+  });
+}
+
+function riscoBurnout(fs){
+  let fa=0;
+  for(let i=0;i<fs.length;i++) if(fs[i].pct>=60) fa=i+1;
+  const mg=fs.reduce((s,f)=>s+f.pct,0)/fs.length;
+  let nivel,cls,icon,txt;
+  if(fa===0&&mg<30){nivel='Sem Risco Significativo';cls='ok';icon='&#9989;';txt='Você não apresenta sinais expressivos das fases do burnout no momento. Continue investindo em equilíbrio e autocuidado.';}
+  else if(fa<=4||(fa===0&&mg<45)){nivel='Risco Inicial';cls='ok';icon='&#128993;';txt='Sinais das fases iniciais'+(fa>0?' (até a Fase '+fa+')':'')+' estão presentes. Atenção e autocuidado preventivo são importantes agora.';}
+  else if(fa<=7){nivel='Risco Moderado';cls='mod';icon='&#128310;';txt='Burnout em estágio intermediário (até a Fase '+fa+'). Mudanças comportamentais e emocionais já estão ocorrendo. Buscar apoio profissional é altamente recomendado.';}
+  else if(fa<=10){nivel='Risco Elevado';cls='hi';icon='&#128680;';txt='Sinais avançados de burnout (até a Fase '+fa+'). Esgotamento significativo presente. Procure um profissional de saúde mental o quanto antes.';}
+  else{nivel='Risco Crítico';cls='hi';icon='&#127186;';txt='Você apresenta sinais das fases mais avançadas do burnout (até a Fase '+fa+'). Intervenção profissional urgente é necessária. Por favor, busque ajuda hoje.';}
+  return{nivel,cls,icon,txt,fa,mg};
+}
+
+function calcularEMostrar(){
+  const fs=calcular();
+  const bi=riscoBurnout(fs);
+  const el=document.getElementById('resultado-area');
+  const fasesHi=fs.filter(f=>f.pct>=60);
+  const curso_info=ST.curso?' · '+ST.curso:'';
+  const trab_info=ST.tipo_trabalho?' · '+ST.tipo_trabalho:'';
+  let html='<div class="res-hero"><h2>Olá, '+ST.nome.split(' ')[0]+'! Seu resultado está pronto.</h2><p>'+ST.genero+' · '+ST.idade+' anos · '+ST.estado_civil+'</p><p style="margin-top:4px;font-size:12px;color:rgba(255,255,255,.75)">'+ST.vinculo+curso_info+trab_info+' · Grupo: <strong>'+ST.codigo+'</strong></p></div>';
+  html+='<div class="nivel-card '+bi.cls+'"><div class="nivel-ttl">'+bi.icon+' Risco de Burnout</div><div class="nivel-val">'+bi.nivel+(bi.fa>0?' <span style="font-size:16px;opacity:.7">· Fase '+bi.fa+'</span>':'')+'</div><div class="nivel-desc">'+bi.txt+'</div></div>';
+  html+='<div class="sc"><div class="sc-ttl">&#128202; Seu perfil nas 12 fases</div>';
+  fs.forEach(({fase,pct})=>{
+    const cor=pct>=70?'#C0392B':pct>=45?'#E67E22':'#27AE60';
+    html+='<div class="fase-res-row"><div class="fase-res-num">F'+fase.num+'</div><div class="fase-res-nome">'+fase.icon+' '+fase.nome+'</div><div class="fase-res-bar-wrap"><div class="fase-res-bar" style="width:'+pct+'%;background:'+cor+'"></div></div><div class="fase-res-pct" style="color:'+cor+'">'+pct+'%</div></div>';
+  });
+  html+='</div>';
+  if(fasesHi.length>0){
+    html+='<div class="sc" style="border-left:4px solid var(--red2)"><div class="sc-ttl">&#9888; Fases que merecem atenção</div>';
+    fasesHi.forEach(({fase,pct})=>{html+='<div style="margin-bottom:12px"><div style="font-family:var(--ff1);font-size:13px;font-weight:700;color:var(--txt)">'+fase.icon+' Fase '+fase.num+' — '+fase.nome+' <span style="color:var(--red2)">('+pct+'%)</span></div><div style="font-size:12px;color:var(--ts);margin-top:2px">'+fase.desc+'</div></div>';});
+    html+='</div>';
+  }
+  let rec='';
+  if(bi.cls==='hi'||bi.fa>=8) rec='&#9888; Seus resultados indicam necessidade de atenção à sua saúde mental. Procure um psicólogo ou médico. Você não precisa passar por isso sozinho(a).';
+  else if(bi.cls==='mod'||bi.fa>=5) rec='&#128155; Seus resultados indicam sinais de alerta. Reserve tempo para autocuidado, estabeleça limites e considere apoio profissional preventivamente.';
+  else rec='&#128154; Você está em um bom momento. Continue investindo em equilíbrio entre vida pessoal e obrigações.';
+  html+='<div class="sc" style="border-left:4px solid var(--bm)"><div class="sc-ttl">&#128172; Recomendação</div><div style="font-size:14px;color:var(--txt);line-height:1.65">'+rec+'</div></div>';
+  html+='<div class="share-sec"><h3>&#128242; Compartilhe</h3><p>Envie seu resultado ou acesse o relatório do seu grupo.</p><div class="share-btns"><button class="btn btn-wa" onclick="shareWA()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Compartilhar via WhatsApp</button>';
+  html+='<button class="btn btn-rel" onclick="abrirRelatorioGrupo()">&#128202; Ver Relatório do Grupo '+ST.codigo+'</button>';
+  html+='<button class="btn btn-sec" onclick="location.reload()">&#128260; Refazer</button></div>';
+  html+='<div style="margin-top:14px"><p style="font-size:12px;color:var(--ts);margin-bottom:6px;font-weight:600">&#128203; Clique na caixa e copie (Ctrl+A &#8594; Ctrl+C):</p><textarea id="txt-resultado" readonly onclick="this.select()" style="width:100%;min-height:160px;padding:12px;border:2px solid var(--bm);border-radius:10px;background:var(--sur2);color:var(--txt);font-family:var(--ff2);font-size:13px;line-height:1.6;resize:vertical;cursor:text"></textarea></div></div>';
+  el.innerHTML=html;
+  const txta=document.getElementById('txt-resultado');
+  if(txta){
+    const alt=fs.filter(f=>f.pct>=60);
+    txta.value='&#128293; MAPA DO BURNOUT — FACUNICAMPS\n'+'─'.repeat(38)+'\n'+'👤 '+ST.nome+' · '+ST.idade+' anos · '+ST.vinculo+'\n'+'🏷️ Grupo: '+ST.codigo+'\n\n'+'🔥 RISCO: '+bi.nivel+(bi.fa>0?' · Fase '+bi.fa:'')+'\n\n'+(alt.length>0?'⚠️ FASES EM DESTAQUE:\n'+alt.map(f=>'  • Fase '+f.fase.num+' — '+f.fase.nome+': '+f.pct+'%').join('\n')+'\n\n':'')+
+    '✨ Faça a avaliação:\nhttps://luciakratz-arch.github.io/FACUNICAMPSburnout/\n📍 Facunicamps — Faculdade Unicamps';
+  }
+  go(4);
+  salvarFirebase(fs,bi);
+}
+
+function shareWA(){
+  const fs=calcular();const bi=riscoBurnout(fs);
+  const msg=encodeURIComponent('🔥 *Mapa do Burnout · Facunicamps*\n\nAcabei de fazer a avaliação!\n\n🔥 *Risco:* '+bi.nivel+(bi.fa>0?' · Fase '+bi.fa:'')+'\n\n✨ Faça o seu:\nhttps://luciakratz-arch.github.io/FACUNICAMPSburnout/\n\n📍 *Facunicamps — Faculdade Unicamps*');
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+
+const DB='https://anamnese-dralucia-default-rtdb.firebaseio.com';
+const COL='facunicamps-burnout';
+
+async function salvarFirebase(fs,bi){
+  try{
+    const data={nome:ST.nome,idade:ST.idade,genero:ST.genero,estado_civil:ST.estado_civil,vinculo:ST.vinculo,curso:ST.curso||'',tipo_trabalho:ST.tipo_trabalho,profissao:ST.profissao||'',zap:ST.zap,codigo:ST.codigo,risco:bi.nivel,faseAtiva:bi.fa,mediaGeral:Math.round(bi.mg),fases:Object.fromEntries(fs.map(f=>['f'+f.fase.num,f.pct])),ts:new Date().toISOString()};
+    await fetch(DB+'/'+COL+'.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  }catch(e){console.warn('Firebase:',e)}
+}
+
+function abrirRelatorioGrupo(){
+  document.getElementById('codigo-rel').value=ST.codigo;
+  go(5);
+  setTimeout(()=>carregarRelatorio(),100);
+}
+
+async function carregarRelatorio(){
+  const codigo=document.getElementById('codigo-rel').value.trim().toUpperCase();
+  const msgEl=document.getElementById('msg-rel');
+  if(!codigo){alert('Informe o código do grupo.');return}
+  msgEl.style.display='none';
+  const btn=document.getElementById('btn-ver-rel');
+  if(btn) btn.textContent='⏳ Carregando...';
+  try{
+    const res=await fetch(DB+'/'+COL+'.json?orderBy="codigo"&equalTo="'+codigo+'"');
+    const raw=await res.json();
+    if(!raw||Object.keys(raw).length===0){msgEl.style.display='block';if(btn)btn.textContent='📊 Ver Relatório';return;}
+    renderRelatorio(codigo,Object.values(raw));
+  }catch(e){msgEl.style.display='block';msgEl.textContent='Erro ao carregar. Verifique sua conexão.';if(btn)btn.textContent='📊 Ver Relatório';}
+}
+
+function renderRelatorio(codigo,registros){
+  const n=registros.length;
+  const fasePcts=FASES.map(fase=>{
+    const med=registros.reduce((s,r)=>s+(r.fases?.['f'+fase.num]||0),0)/n;
+    return{fase,pct:Math.round(med)};
+  });
+  const dist={ok:0,mod:0,hi:0};
+  registros.forEach(r=>{const fa=r.faseAtiva||0;const mg=r.mediaGeral||0;if(fa<=4&&mg<45)dist.ok++;else if(fa<=7)dist.mod++;else dist.hi++;});
+  const vinculos={};registros.forEach(r=>{const v=r.vinculo||'Não inf.';vinculos[v]=(vinculos[v]||0)+1;});
+  const generos={};registros.forEach(r=>{const g=r.genero||'Não inf.';generos[g]=(generos[g]||0)+1;});
+  const trabalhos={};registros.forEach(r=>{const t=r.tipo_trabalho||'Não inf.';trabalhos[t]=(trabalhos[t]||0)+1;});
+  const vinculoLbl=Object.entries(vinculos).map(([k,v])=>k+': '+v).join(' · ');
+  const generoLbl=Object.entries(generos).map(([k,v])=>k+': '+v).join(' · ');
+  const trabalhoLbl=Object.entries(trabalhos).map(([k,v])=>k+': '+v).join(' · ');
+  const fasesCrit=fasePcts.filter(f=>f.pct>=60);
+  const el=document.getElementById('relatorio-area');
+  let html='<div class="res-hero"><h2>&#128202; Relatório do Grupo</h2><p>Código: <strong>'+codigo+'</strong> · '+n+' participante'+(n>1?'s':'')+'</p></div>';
+  html+='<div class="rel-stats"><div class="rel-stat"><div class="rel-stat-num">'+n+'</div><div class="rel-stat-lbl">Respostas</div></div><div class="rel-stat"><div class="rel-stat-num" style="color:#27AE60">'+dist.ok+'</div><div class="rel-stat-lbl">Baixo risco</div></div><div class="rel-stat"><div class="rel-stat-num" style="color:#C0392B">'+(dist.mod+dist.hi)+'</div><div class="rel-stat-lbl">Atenção/Alto</div></div></div>';
+  html+='<div class="sc"><div class="sc-ttl">&#128203; Perfil dos Participantes</div>';
+  html+='<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--tf);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Vínculo</div><div style="font-size:13px;color:var(--ts)">'+vinculoLbl+'</div></div>';
+  html+='<div style="margin-bottom:8px"><div style="font-size:11px;font-weight:700;color:var(--tf);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Gênero</div><div style="font-size:13px;color:var(--ts)">'+generoLbl+'</div></div>';
+  html+='<div><div style="font-size:11px;font-weight:700;color:var(--tf);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Tipo de trabalho</div><div style="font-size:13px;color:var(--ts)">'+trabalhoLbl+'</div></div>';
+  html+='</div>';
+  html+='<div class="sc"><div class="sc-ttl">&#128293; Média do grupo por fase</div>';
+  fasePcts.forEach(({fase,pct})=>{
+    const cor=pct>=70?'#C0392B':pct>=45?'#E67E22':'#27AE60';
+    const cls=pct>=70?'hi':pct>=45?'mod':'ok';
+    html+='<div class="rel-row '+cls+'"><span style="font-size:10px;font-weight:700;color:var(--tf)">F'+fase.num+'</span><span style="font-size:12px;font-weight:600;color:var(--txt)">'+fase.icon+' '+fase.nome+'</span><div class="rel-row-bar-wrap"><div class="rel-row-bar" style="width:'+pct+'%;background:'+cor+'"></div></div><span style="font-size:12px;font-weight:700;color:'+cor+';text-align:right">'+pct+'%</span></div>';
+  });
+  html+='</div>';
+  if(fasesCrit.length>0){
+    html+='<div class="sc" style="border-left:4px solid var(--red2)"><div class="sc-ttl">&#9888; Atenção coletiva nestas fases</div>';
+    fasesCrit.forEach(({fase,pct})=>{html+='<div style="margin-bottom:10px"><div style="font-family:var(--ff1);font-size:13px;font-weight:700;color:var(--txt)">'+fase.icon+' Fase '+fase.num+' — '+fase.nome+' <span style="color:var(--red2)">('+pct+'%)</span></div><div style="font-size:12px;color:var(--ts);margin-top:2px">'+fase.desc+'</div></div>';});
+    html+='</div>';
+  }
+  html+='<div class="btn-row"><button class="btn btn-ghost" onclick="go(1)">&#8592; Início</button></div>';
+  html+='<div style="margin-top:12px"><p style="font-size:12px;color:var(--ts);margin-bottom:6px;font-weight:600">&#128203; Clique na caixa e copie o relatório:</p><textarea id="txt-relatorio" readonly onclick="this.select()" style="width:100%;min-height:200px;padding:12px;border:2px solid var(--bm);border-radius:10px;background:var(--sur2);color:var(--txt);font-family:var(--ff2);font-size:12px;line-height:1.6;resize:vertical;cursor:text"></textarea></div>';
+  el.innerHTML=html;
+  const txta=document.getElementById('txt-relatorio');
+  if(txta) txta.value='📊 RELATÓRIO DO GRUPO — MAPA DO BURNOUT\nFacunicamps — Faculdade Unicamps\n'+'─'.repeat(40)+'\n'+'🏷️ Grupo: '+codigo+'\n'+'👥 '+n+' participante'+(n>1?'s':'')+' | Baixo risco: '+dist.ok+' | Atenção/Alto: '+(dist.mod+dist.hi)+'\n'+'📅 '+new Date().toLocaleDateString('pt-BR')+'\n\n'+'🔥 MÉDIA POR FASE:\n'+fasePcts.map(f=>'  Fase '+f.fase.num+' — '+f.fase.nome+': '+f.pct+'%').join('\n')+'\n\n'+(fasesCrit.length>0?'⚠️ FASES QUE MERECEM ATENÇÃO:\n'+fasesCrit.map(f=>'  • Fase '+f.fase.num+' — '+f.fase.nome+': '+f.pct+'%').join('\n')+'\n\n':'')+
+  '✨ https://luciakratz-arch.github.io/FACUNICAMPSburnout/';
+  go(6);
+}
+</script>
+</body>
+</html>
