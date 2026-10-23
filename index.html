@@ -87,6 +87,8 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 .btn-cta{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;box-shadow:0 4px 16px rgba(139,26,26,.35)}
 .btn-wa{background:#25D366;color:#fff;box-shadow:0 4px 16px rgba(37,211,102,.28);font-size:14px}
 .btn-rel{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bd);font-size:14px}
+.chip-cod{padding:6px 14px;border-radius:20px;border:1.5px solid var(--bm);background:var(--sur2);color:var(--bm);font-family:var(--ff1);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.5px}
+.chip-cod:hover,.chip-cod.ativo{background:var(--bm);color:#fff;border-color:var(--bm)}
 
 .fase-block{background:var(--sur);border:1.5px solid var(--bor);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--sh1)}
 .fase-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
@@ -203,7 +205,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <button class="btn btn-cta" onclick="go(2)">Começar &#8594;</button>
   </div>
   <div style="margin-top:16px;text-align:center">
-    <button class="btn-ghost btn" style="flex:none;display:inline-flex" onclick="go(5)">&#128202; Ver Relatório do Grupo</button>
+    <button class="btn-ghost btn" style="flex:none;display:inline-flex" onclick="go(5);carregarCodigosDisponiveis()">&#128202; Ver Relatório do Grupo</button>
   </div>
 </div>
 
@@ -359,6 +361,10 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <p>Informe o código do grupo para acessar o relatório consolidado com os resultados de todos os participantes deste código.</p>
     <label class="lbl">Código do Grupo</label>
     <input class="inp inp-codigo" id="codigo-rel" type="text" maxlength="20" placeholder="Ex: TURMA2024A" oninput="this.value=this.value.toUpperCase()">
+    <div id="codigos-sugeridos" style="display:none;margin-top:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--tf);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">&#128278; Grupos com respostas:</div>
+      <div id="chips-codigos" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
     <div id="msg-rel">Código não encontrado ou sem respostas registradas ainda.</div>
     <div class="btn-row" style="margin-top:12px">
       <button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button>
@@ -593,7 +599,43 @@ async function salvarFirebase(fs,bi){
 function abrirRelatorioGrupo(){
   document.getElementById('codigo-rel').value=ST.codigo;
   go(5);
+  carregarCodigosDisponiveis();
   setTimeout(()=>carregarRelatorio(),100);
+}
+
+async function carregarCodigosDisponiveis(){
+  const wrap=document.getElementById('codigos-sugeridos');
+  const chips=document.getElementById('chips-codigos');
+  // Tenta restaurar último código usado
+  try{const ult=localStorage.getItem('fac_ultimo_cod');if(ult&&!document.getElementById('codigo-rel').value){document.getElementById('codigo-rel').value=ult;}}catch(e){}
+  try{
+    const res=await fetch(DB+'/'+COL+'.json?shallow=true');
+    const raw=await res.json();
+    if(!raw)return;
+    // Buscar todos registros para extrair códigos únicos
+    const res2=await fetch(DB+'/'+COL+'.json');
+    const todos=await res2.json();
+    if(!todos)return;
+    const codsUnicos=[...new Set(Object.values(todos).map(r=>r.codigo).filter(Boolean))].sort();
+    if(codsUnicos.length===0)return;
+    chips.innerHTML='';
+    codsUnicos.forEach(cod=>{
+      const btn=document.createElement('button');
+      btn.className='chip-cod';
+      btn.textContent=cod;
+      btn.onclick=()=>{
+        document.getElementById('codigo-rel').value=cod;
+        document.querySelectorAll('.chip-cod').forEach(b=>b.classList.remove('ativo'));
+        btn.classList.add('ativo');
+        try{localStorage.setItem('fac_ultimo_cod',cod);}catch(e){}
+      };
+      chips.appendChild(btn);
+    });
+    wrap.style.display='block';
+    // Marcar chip do código atual se existir
+    const atual=document.getElementById('codigo-rel').value;
+    if(atual){document.querySelectorAll('.chip-cod').forEach(b=>{if(b.textContent===atual)b.classList.add('ativo');});}
+  }catch(e){console.warn('Chips:',e);}
 }
 
 async function carregarRelatorio(){
@@ -603,15 +645,23 @@ async function carregarRelatorio(){
   msgEl.style.display='none';
   const btn=document.getElementById('btn-ver-rel');
   if(btn) btn.textContent='⏳ Carregando...';
+  const isAdmin=(codigo==='1234');
+  if(!isAdmin){try{localStorage.setItem('fac_ultimo_cod',codigo);}catch(e){}}
   try{
-    const res=await fetch(DB+'/'+COL+'.json?orderBy="codigo"&equalTo="'+codigo+'"');
-    const raw=await res.json();
+    let raw;
+    if(isAdmin){
+      const res=await fetch(DB+'/'+COL+'.json');
+      raw=await res.json();
+    }else{
+      const res=await fetch(DB+'/'+COL+'.json?orderBy="codigo"&equalTo="'+codigo+'"');
+      raw=await res.json();
+    }
     if(!raw||Object.keys(raw).length===0){msgEl.style.display='block';if(btn)btn.textContent='📊 Ver Relatório';return;}
-    renderRelatorio(codigo,Object.values(raw));
+    renderRelatorio(isAdmin?'TODOS OS GRUPOS':codigo,Object.values(raw),isAdmin);
   }catch(e){msgEl.style.display='block';msgEl.textContent='Erro ao carregar. Verifique sua conexão.';if(btn)btn.textContent='📊 Ver Relatório';}
 }
 
-function renderRelatorio(codigo,registros){
+function renderRelatorio(codigo,registros,isAdmin){
   const n=registros.length;
   const fasePcts=FASES.map(fase=>{
     const med=registros.reduce((s,r)=>s+(r.fases?.['f'+fase.num]||0),0)/n;
@@ -644,6 +694,21 @@ function renderRelatorio(codigo,registros){
   if(fasesCrit.length>0){
     html+='<div class="sc" style="border-left:4px solid var(--red2)"><div class="sc-ttl">&#9888; Atenção coletiva nestas fases</div>';
     fasesCrit.forEach(({fase,pct})=>{html+='<div style="margin-bottom:10px"><div style="font-family:var(--ff1);font-size:13px;font-weight:700;color:var(--txt)">'+fase.icon+' Fase '+fase.num+' — '+fase.nome+' <span style="color:var(--red2)">('+pct+'%)</span></div><div style="font-size:12px;color:var(--ts);margin-top:2px">'+fase.desc+'</div></div>';});
+    html+='</div>';
+  }
+  if(isAdmin){
+    const grupos={};registros.forEach(r=>{const g=r.codigo||'Sem código';if(!grupos[g])grupos[g]=[];grupos[g].push(r);});
+    html+='<div class="sc"><div class="sc-ttl">&#128209; Participantes por Grupo</div>';
+    Object.entries(grupos).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([grp,regs])=>{
+      html+='<div style="margin-bottom:14px"><div style="font-family:var(--ff1);font-size:13px;font-weight:800;color:var(--bm);margin-bottom:5px;border-bottom:1px solid var(--bor);padding-bottom:4px">&#127981; '+grp+' ('+regs.length+' participante'+(regs.length>1?'s':'')+')</div>';
+      html+='<div style="display:flex;flex-direction:column;gap:3px">';
+      regs.forEach(r=>{
+        const fa=r.faseAtiva||0;const mg=r.mediaGeral||0;
+        const risco=fa<=4&&mg<45?'&#128994; Baixo':fa<=7?'&#128993; Moderado':'&#128308; Alto';
+        html+='<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--sur2);border-radius:8px;font-size:12px"><span style="flex:1;color:var(--txt);font-weight:600">'+r.nome+'</span><span style="color:var(--ts)">'+r.curso+'</span><span>'+risco+'</span></div>';
+      });
+      html+='</div></div>';
+    });
     html+='</div>';
   }
   html+='<div class="btn-row"><button class="btn btn-ghost" onclick="go(1)">&#8592; Início</button></div>';
