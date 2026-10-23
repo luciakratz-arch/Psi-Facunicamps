@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Painel da Professora — Facunicamps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bd:#0D2B6B;--bm:#1A52B8;--bl:#3A7FD4;
+  --red:#8B1A1A;--red2:#C0392B;
+  --gold:#D4A017;--gold2:#F0C030;
+  --green:#1A7A3A;--green2:#27AE60;
+  --bg:#EEF3FB;--sur:#FFFFFF;--sur2:#E8F0FB;
+  --bor:#C8D8EF;--txt:#1A2A40;--ts:#4A6080;--tf:#8AA0B8;--inp:#FFFFFF;
+  --ff1:'Montserrat',sans-serif;--ff2:'Inter',sans-serif;
+  --sh1:0 2px 8px rgba(13,43,107,.08);--sh2:0 4px 20px rgba(13,43,107,.14);--sh3:0 8px 36px rgba(13,43,107,.2);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0C1720;--sur:#13233A;--sur2:#192E47;--bor:#243D5C;--txt:#E4EEF8;--ts:#7AA0C0;--tf:#4A6A8A;--inp:#192E47;
+}}
+:root[data-theme="dark"]{--bg:#0C1720;--sur:#13233A;--sur2:#192E47;--bor:#243D5C;--txt:#E4EEF8;--ts:#7AA0C0;--tf:#4A6A8A;--inp:#192E47;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{min-height:100%;background:var(--bg);color:var(--txt);font-family:var(--ff2);font-size:15px;line-height:1.6;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+button{cursor:pointer;font-family:var(--ff2)}
+input,select,textarea{font-family:var(--ff2);font-size:16px}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,var(--bd),var(--bm));padding:11px 16px 13px;display:flex;align-items:center;gap:12px;border-bottom:4px solid var(--gold);position:sticky;top:env(safe-area-inset-top,0);z-index:200;box-shadow:var(--sh2)}
+.hdr-icon{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.hdr-text{display:flex;flex-direction:column}
+.hdr-name{font-family:var(--ff1);font-weight:900;font-size:16px;color:#fff;letter-spacing:.3px;line-height:1.1}
+.hdr-sub{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.4px;font-weight:600}
+.hdr-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.hdr-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;font-family:var(--ff1);letter-spacing:.3px}
+.hdr-btn:hover{background:rgba(255,255,255,.25)}
+
+/* LAYOUT */
+.main{max-width:860px;margin:0 auto;padding:20px 16px 56px}
+
+/* LOGIN */
+.login-wrap{max-width:380px;margin:60px auto;background:var(--sur);border:1px solid var(--bor);border-radius:20px;padding:36px 28px;box-shadow:var(--sh3);text-align:center}
+.login-icon{font-size:52px;margin-bottom:14px}
+.login-wrap h2{font-family:var(--ff1);font-size:20px;font-weight:900;color:var(--bd);margin-bottom:6px}
+.login-wrap p{font-size:13px;color:var(--ts);margin-bottom:22px}
+.login-err{color:var(--red2);font-size:13px;font-weight:600;margin-top:8px;display:none}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--sur2);border-radius:14px;padding:4px;margin-bottom:20px;border:1px solid var(--bor)}
+.tab{flex:1;padding:10px 8px;border:none;border-radius:11px;background:transparent;font-family:var(--ff1);font-size:12px;font-weight:700;color:var(--ts);transition:all .2s;text-align:center}
+.tab.on{background:var(--sur);color:var(--bd);box-shadow:var(--sh1)}
+
+/* CARDS */
+.sc{background:var(--sur);border:1px solid var(--bor);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:var(--sh1)}
+.sc-ttl{font-family:var(--ff1);font-size:12px;font-weight:700;color:var(--bm);margin-bottom:14px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.5px}
+
+/* FORM */
+.fg{margin-bottom:14px}
+.lbl{display:block;font-size:12px;font-weight:600;color:var(--ts);margin-bottom:5px}
+.inp,.sel{width:100%;padding:11px 13px;border:1.5px solid var(--bor);border-radius:12px;background:var(--inp);color:var(--txt);font-size:15px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.inp:focus,.sel:focus{border-color:var(--bm);box-shadow:0 0 0 3px rgba(26,82,184,.14)}
+.sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%234A6080' fill='none' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.row2{grid-template-columns:1fr}}
+
+/* BOTOES */
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:12px 18px;border:none;border-radius:12px;font-family:var(--ff1);font-weight:700;font-size:14px;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px}
+.btn:active{transform:scale(.97)}
+.btn-pri{background:linear-gradient(135deg,var(--bd),var(--bm));color:#fff;box-shadow:var(--sh2)}
+.btn-sec{background:var(--sur);color:var(--ts);border:1.5px solid var(--bor)}
+.btn-ghost{background:transparent;color:var(--bm);font-size:13px;min-height:40px;padding:8px 14px;border:none}
+.btn-green{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff}
+.btn-wa{background:#25D366;color:#fff;font-size:13px;padding:8px 14px;min-height:38px}
+.btn-sm{font-size:12px;padding:7px 14px;min-height:36px}
+.btn-del{background:transparent;color:var(--red2);border:1.5px solid var(--red2);font-size:12px;padding:6px 12px;min-height:34px}
+
+/* CODIGO BADGE */
+.cod-badge{display:inline-block;background:linear-gradient(135deg,var(--bd),var(--bm));color:#fff;font-family:var(--ff1);font-size:13px;font-weight:800;padding:5px 14px;border-radius:20px;letter-spacing:1px}
+.cod-preview{background:var(--sur2);border:2px dashed var(--bm);border-radius:12px;padding:10px 14px;text-align:center;margin:10px 0 4px}
+.cod-preview-lbl{font-size:11px;color:var(--tf);font-weight:600;margin-bottom:4px}
+.cod-preview-val{font-family:var(--ff1);font-size:18px;font-weight:900;color:var(--bd);letter-spacing:1px}
+
+/* GRUPOS LIST */
+.grupo-card{background:var(--sur);border:1.5px solid var(--bor);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:var(--sh1);transition:border-color .2s}
+.grupo-card:hover{border-color:var(--bm)}
+.grupo-card-hdr{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.grupo-info{flex:1;min-width:0}
+.grupo-nome{font-family:var(--ff1);font-size:15px;font-weight:800;color:var(--txt);margin-bottom:2px}
+.grupo-meta{font-size:12px;color:var(--ts);line-height:1.6}
+.grupo-stats{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
+.grupo-stat{background:var(--sur2);border-radius:10px;padding:6px 12px;text-align:center;min-width:70px}
+.grupo-stat-num{font-family:var(--ff1);font-size:18px;font-weight:900;color:var(--bd)}
+.grupo-stat-lbl{font-size:10px;color:var(--tf);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.grupo-stat-num.red{color:var(--red2)}
+.grupo-stat-num.green{color:var(--green2)}
+.grupo-acoes{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* RELATORIO */
+.rel-hero{background:linear-gradient(135deg,var(--bd),var(--bm));border-radius:16px;padding:20px;color:#fff;margin-bottom:16px;text-align:center}
+.rel-hero h2{font-family:var(--ff1);font-size:18px;font-weight:900;margin-bottom:4px}
+.rel-hero p{font-size:13px;opacity:.8}
+.rel-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.rel-stat{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:12px;text-align:center;box-shadow:var(--sh1)}
+.rel-stat-num{font-family:var(--ff1);font-size:22px;font-weight:900;color:var(--bd)}
+.rel-stat-lbl{font-size:10px;color:var(--tf);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+
+/* BARRAS */
+.rel-row{display:grid;grid-template-columns:30px 1fr 100px 44px;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;margin-bottom:5px;background:var(--sur2)}
+.rel-row.hi{background:rgba(192,57,43,.08)}
+.rel-row.mod{background:rgba(230,126,34,.08)}
+.rel-row.ok{background:rgba(39,174,96,.08)}
+.rel-row-bar-wrap{height:8px;background:var(--bor);border-radius:4px;overflow:hidden}
+.rel-row-bar{height:100%;border-radius:4px;transition:width .6s ease}
+
+/* ALUNOS TABLE */
+.aluno-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;margin-bottom:5px;background:var(--sur2);font-size:13px}
+.aluno-row:hover{background:var(--sur)}
+.risco-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.risco-ok{background:rgba(39,174,96,.15);color:#1A7A3A}
+.risco-mod{background:rgba(230,126,34,.15);color:#A04010}
+.risco-hi{background:rgba(192,57,43,.15);color:#8B1A1A}
+
+/* GRAFICOS SVG */
+.grafico-wrap{overflow-x:auto;margin:8px 0}
+.grafico-wrap svg{display:block}
+
+/* UTILS */
+.empty{text-align:center;padding:32px;color:var(--tf);font-size:14px}
+.tag{display:inline-block;background:var(--sur2);border:1px solid var(--bor);border-radius:20px;font-size:11px;font-weight:600;color:var(--ts);padding:3px 10px;margin:2px}
+.divider{height:1px;background:var(--bor);margin:16px 0}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-icon">🎓</div>
+  <div class="hdr-text">
+    <div class="hdr-name">Painel da Professora</div>
+    <div class="hdr-sub">FACUNICAMPS · MAPA DO BURNOUT</div>
+  </div>
+  <div class="hdr-actions" id="hdr-actions" style="display:none">
+    <button class="hdr-btn" onclick="irApp()">🔗 App</button>
+    <button class="hdr-btn" onclick="logout()">Sair</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- LOGIN -->
+<div id="tela-login" class="login-wrap">
+  <div class="login-icon">🔐</div>
+  <h2>Acesso Restrito</h2>
+  <p>Painel exclusivo para professores e coordenadores da Facunicamps</p>
+  <div class="fg">
+    <label class="lbl">Senha de acesso</label>
+    <input class="inp" id="senha-inp" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')entrar()">
+  </div>
+  <div class="btn-row" style="justify-content:center">
+    <button class="btn btn-pri" onclick="entrar()">🔓 Entrar</button>
+  </div>
+  <div class="login-err" id="login-err">Senha incorreta. Tente novamente.</div>
+</div>
+
+<!-- PAINEL PRINCIPAL -->
+<div id="tela-painel" style="display:none">
+
+  <div class="tabs" id="tabs">
+    <button class="tab on" onclick="aba('grupos')">📋 Grupos</button>
+    <button class="tab" onclick="aba('novo')">➕ Novo Grupo</button>
+    <button class="tab" onclick="aba('geral')">📊 Visão Geral</button>
+  </div>
+
+  <!-- ABA: GRUPOS -->
+  <div id="aba-grupos">
+    <div id="lista-grupos"><div class="empty">⏳ Carregando grupos...</div></div>
+  </div>
+
+  <!-- ABA: NOVO GRUPO -->
+  <div id="aba-novo" style="display:none">
+    <div class="sc">
+      <div class="sc-ttl">➕ Cadastrar Novo Grupo</div>
+
+      <div class="row2">
+        <div class="fg">
+          <label class="lbl">Curso / Disciplina *</label>
+          <select class="sel" id="ng-curso" onchange="gerarCodigo()">
+            <option value="">Selecione...</option>
+            <optgroup label="Saúde">
+              <option>Enfermagem</option><option>Farmácia</option><option>Fisioterapia</option>
+              <option>Nutrição</option><option>Odontologia</option><option>Psicologia</option>
+              <option>Educação Física</option>
+            </optgroup>
+            <optgroup label="Humanas / Social">
+              <option>Administração</option><option>Ciências Contábeis</option><option>Direito</option>
+              <option>Pedagogia</option><option>Serviço Social</option><option>Comunicação Social</option>
+              <option>Gestão de RH</option><option>Gestão Pública</option><option>Logística</option>
+              <option>Marketing</option><option>Gestão Comercial</option>
+            </optgroup>
+            <optgroup label="Tecnologia">
+              <option>Análise e Des. de Sistemas</option><option>Engenharia Civil</option>
+              <option>Engenharia Elétrica</option><option>Engenharia de Produção</option>
+              <option>Arquitetura e Urbanismo</option><option>Design Gráfico</option>
+            </optgroup>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="fg" id="outro-curso-box" style="display:none">
+          <label class="lbl">Especifique o curso *</label>
+          <input class="inp" id="ng-curso-outro" type="text" placeholder="Nome do curso" oninput="gerarCodigo()">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="fg">
+          <label class="lbl">Turno *</label>
+          <select class="sel" id="ng-turno" onchange="gerarCodigo()">
+            <option value="">Selecione...</option>
+            <option value="MAT">Matutino</option>
+            <option value="VES">Vespertino</option>
+            <option value="NOT">Noturno</option>
+            <option value="EAD">EAD</option>
+            <option value="INT">Integral</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="lbl">Semestre / Período *</label>
+          <select class="sel" id="ng-semestre" onchange="gerarCodigo()">
+            <option value="">Selecione...</option>
+            <option value="1">1º Semestre</option><option value="2">2º Semestre</option>
+            <option value="3">3º Semestre</option><option value="4">4º Semestre</option>
+            <option value="5">5º Semestre</option><option value="6">6º Semestre</option>
+            <option value="7">7º Semestre</option><option value="8">8º Semestre</option>
+            <option value="9">9º Semestre</option><option value="10">10º Semestre</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label class="lbl">Foco da Pesquisa *</label>
+        <input class="inp" id="ng-foco" type="text" placeholder="Ex: Burnout em estudantes de saúde no noturno">
+      </div>
+
+      <div class="fg">
+        <label class="lbl">Público-alvo *</label>
+        <select class="sel" id="ng-publico">
+          <option value="">Selecione...</option>
+          <option>Universitários (geral)</option>
+          <option>Universitários — Homens</option>
+          <option>Universitários — Mulheres</option>
+          <option>Universitários — Noturno</option>
+          <option>Jovens Pré-Vestibular</option>
+          <option>Jovens Pré-Vestibular — Homens</option>
+          <option>Jovens Pré-Vestibular — Mulheres</option>
+          <option>Mulheres (geral)</option>
+          <option>Homens (geral)</option>
+          <option>Profissionais da Saúde</option>
+          <option>Professores / Educadores</option>
+          <option>Misto / Sem filtro</option>
+        </select>
+      </div>
+
+      <div class="fg">
+        <label class="lbl">Observações (opcional)</label>
+        <input class="inp" id="ng-obs" type="text" placeholder="Ex: Turma A — 2º sem. 2024">
+      </div>
+
+      <!-- Preview do código gerado -->
+      <div class="cod-preview" id="cod-preview" style="display:none">
+        <div class="cod-preview-lbl">Código que será gerado</div>
+        <div class="cod-preview-val" id="cod-preview-val">—</div>
+        <div style="font-size:11px;color:var(--tf);margin-top:3px">Este código será compartilhado com os alunos</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="aba('grupos')">← Voltar</button>
+        <button class="btn btn-pri" onclick="salvarGrupo()">💾 Salvar Grupo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA: VISÃO GERAL -->
+  <div id="aba-geral" style="display:none">
+    <div id="visao-geral-area"><div class="empty">⏳ Carregando...</div></div>
+  </div>
+
+  <!-- TELA: RELATÓRIO DO GRUPO -->
+  <div id="tela-relatorio" style="display:none">
+    <div id="rel-area"></div>
+  </div>
+
+</div><!-- fim painel -->
+
+</div><!-- fim main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DB='https://anamnese-dralucia-default-rtdb.firebaseio.com';
+const COL_GRUPOS='facunicamps-grupos';
+const COL_RESP='facunicamps-burnout';
+const SENHA='1234';
+
+// PREFIXOS DOS CURSOS
+const PREFIXOS={
+  'Enfermagem':'ENF','Farmácia':'FAR','Fisioterapia':'FIS','Nutrição':'NUT',
+  'Odontologia':'ODO','Psicologia':'PSI','Educação Física':'EDF',
+  'Administração':'ADM','Ciências Contábeis':'CON','Direito':'DIR',
+  'Pedagogia':'PED','Serviço Social':'SSO','Comunicação Social':'COM',
+  'Gestão de RH':'GRH','Gestão Pública':'GPU','Logística':'LOG',
+  'Marketing':'MKT','Gestão Comercial':'GCO',
+  'Análise e Des. de Sistemas':'ADS','Engenharia Civil':'ECI',
+  'Engenharia Elétrica':'EEL','Engenharia de Produção':'EPR',
+  'Arquitetura e Urbanismo':'ARQ','Design Gráfico':'DES'
+};
+
+let grupoAtual=null;
+let todosGrupos=[];
+let todasRespostas=[];
+
+// ---- LOGIN ----
+function entrar(){
+  const s=document.getElementById('senha-inp').value;
+  if(s===SENHA){
+    document.getElementById('tela-login').style.display='none';
+    document.getElementById('tela-painel').style.display='block';
+    document.getElementById('hdr-actions').style.display='flex';
+    carregarTudo();
+  }else{
+    document.getElementById('login-err').style.display='block';
+    document.getElementById('senha-inp').value='';
+    document.getElementById('senha-inp').focus();
+  }
+}
+function logout(){
+  document.getElementById('tela-login').style.display='block';
+  document.getElementById('tela-painel').style.display='none';
+  document.getElementById('hdr-actions').style.display='none';
+  document.getElementById('senha-inp').value='';
+}
+function irApp(){window.open('https://luciakratz-arch.github.io/Psi-Facunicamps/','_blank');}
+
+// ---- ABAS ----
+function aba(nome){
+  ['grupos','novo','geral'].forEach(a=>{
+    document.getElementById('aba-'+a).style.display=(a===nome)?'block':'none';
+  });
+  document.getElementById('tela-relatorio').style.display='none';
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('on',['grupos','novo','geral'][i]===nome);
+  });
+  if(nome==='geral') renderVisaoGeral();
+}
+
+// ---- CARREGAR TUDO ----
+async function carregarTudo(){
+  try{
+    const [rG,rR]=await Promise.all([
+      fetch(DB+'/'+COL_GRUPOS+'.json'),
+      fetch(DB+'/'+COL_RESP+'.json')
+    ]);
+    const dataG=await rG.json();
+    const dataR=await rR.json();
+    todosGrupos=dataG?Object.entries(dataG).map(([k,v])=>({...v,_id:k})):[];
+    todasRespostas=dataR?Object.values(dataR):[];
+    renderListaGrupos();
+  }catch(e){console.warn(e);}
+}
+
+// ---- GERAR CÓDIGO ----
+function gerarCodigo(){
+  const cursoEl=document.getElementById('ng-curso');
+  const curso=cursoEl.value==='outro'?document.getElementById('ng-curso-outro').value:cursoEl.value;
+  const turno=document.getElementById('ng-turno').value;
+  if(!curso||!turno){document.getElementById('cod-preview').style.display='none';return;}
+  const cursoVal=cursoEl.value==='outro'?curso:cursoEl.value;
+  document.getElementById('outro-curso-box').style.display=(cursoEl.value==='outro')?'block':'none';
+  const pref=PREFIXOS[cursoVal]||(curso.substring(0,3).toUpperCase());
+  // Contar quantos grupos já existem com esse prefixo+turno
+  const iguais=todosGrupos.filter(g=>g.codigo&&g.codigo.startsWith(pref+'-'+turno+'-')).length;
+  const num=String(iguais+1).padStart(3,'0');
+  const cod=pref+'-'+turno+'-'+num;
+  document.getElementById('cod-preview-val').textContent=cod;
+  document.getElementById('cod-preview').style.display='block';
+  return cod;
+}
+
+// ---- SALVAR GRUPO ----
+async function salvarGrupo(){
+  const cursoEl=document.getElementById('ng-curso');
+  const curso=cursoEl.value==='outro'?document.getElementById('ng-curso-outro').value:cursoEl.value;
+  const turno=document.getElementById('ng-turno').value;
+  const semestre=document.getElementById('ng-semestre').value;
+  const foco=document.getElementById('ng-foco').value.trim();
+  const publico=document.getElementById('ng-publico').value;
+  if(!curso||!turno||!semestre||!foco||!publico){toast('⚠️ Preencha todos os campos obrigatórios.');return;}
+  const cod=gerarCodigo();
+  if(!cod){toast('⚠️ Erro ao gerar código.');return;}
+  const obs=document.getElementById('ng-obs').value.trim();
+  const turnoNomes={MAT:'Matutino',VES:'Vespertino',NOT:'Noturno',EAD:'EAD',INT:'Integral'};
+  const data={
+    codigo:cod,
+    curso,
+    turno,
+    turnoNome:turnoNomes[turno]||turno,
+    semestre,
+    foco,
+    publico,
+    obs,
+    criado:new Date().toISOString(),
+    ts:Date.now()
+  };
+  try{
+    await fetch(DB+'/'+COL_GRUPOS+'.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    toast('✅ Grupo '+cod+' cadastrado!');
+    // Limpar form
+    ['ng-curso','ng-turno','ng-semestre','ng-publico'].forEach(id=>document.getElementById(id).value='');
+    ['ng-foco','ng-obs','ng-curso-outro'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('cod-preview').style.display='none';
+    document.getElementById('outro-curso-box').style.display='none';
+    await carregarTudo();
+    aba('grupos');
+  }catch(e){toast('❌ Erro ao salvar. Tente novamente.');}
+}
+
+// ---- LISTA DE GRUPOS ----
+function renderListaGrupos(){
+  const el=document.getElementById('lista-grupos');
+  if(todosGrupos.length===0){
+    el.innerHTML='<div class="empty">📋 Nenhum grupo cadastrado ainda.<br><br><button class="btn btn-pri" onclick="aba(\'novo\')">➕ Criar primeiro grupo</button></div>';
+    return;
+  }
+  // Ordenar por data de criação (mais recente primeiro)
+  const ordenados=[...todosGrupos].sort((a,b)=>b.ts-a.ts);
+  let html='';
+  ordenados.forEach(g=>{
+    const resps=todasRespostas.filter(r=>r.codigo===g.codigo);
+    const n=resps.length;
+    const dist={ok:0,mod:0,hi:0};
+    resps.forEach(r=>{const fa=r.faseAtiva||0;const mg=r.mediaGeral||0;if(fa<=4&&mg<45)dist.ok++;else if(fa<=7)dist.mod++;else dist.hi++;});
+    const dataCriacao=g.criado?new Date(g.criado).toLocaleDateString('pt-BR'):'—';
+    html+=`<div class="grupo-card">
+      <div class="grupo-card-hdr">
+        <div class="grupo-info">
+          <div class="grupo-nome">${g.curso} — ${g.turnoNome} · ${g.semestre}º Sem.</div>
+          <div class="grupo-meta">
+            <span class="cod-badge">${g.codigo}</span>
+            &nbsp;·&nbsp;${g.publico}&nbsp;·&nbsp;Criado em ${dataCriacao}
+          </div>
+          ${g.obs?`<div style="font-size:12px;color:var(--tf);margin-top:3px">📝 ${g.obs}</div>`:''}
+          ${g.foco?`<div style="font-size:12px;color:var(--ts);margin-top:3px;font-style:italic">🎯 ${g.foco}</div>`:''}
+        </div>
+      </div>
+      <div class="grupo-stats">
+        <div class="grupo-stat"><div class="grupo-stat-num">${n}</div><div class="grupo-stat-lbl">Respostas</div></div>
+        <div class="grupo-stat"><div class="grupo-stat-num green">${dist.ok}</div><div class="grupo-stat-lbl">Baixo risco</div></div>
+        <div class="grupo-stat"><div class="grupo-stat-num" style="color:#E67E22">${dist.mod}</div><div class="grupo-stat-lbl">Moderado</div></div>
+        <div class="grupo-stat"><div class="grupo-stat-num red">${dist.hi}</div><div class="grupo-stat-lbl">Alto risco</div></div>
+      </div>
+      <div class="grupo-acoes">
+        <button class="btn btn-sm btn-pri" onclick="verRelatorio('${g.codigo}')">📊 Ver Relatório</button>
+        <button class="btn btn-sm btn-green" onclick="copiarCodigo('${g.codigo}')">📋 Copiar Código</button>
+        <button class="btn btn-sm btn-wa" onclick="compartilharWhats('${g.codigo}')">💬 Compartilhar</button>
+        <button class="btn btn-sm btn-del" onclick="deletarGrupo('${g._id}','${g.codigo}')">🗑️</button>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+// ---- VER RELATÓRIO ----
+function verRelatorio(codigo){
+  grupoAtual=codigo;
+  const resps=todasRespostas.filter(r=>r.codigo===codigo);
+  const grupo=todosGrupos.find(g=>g.codigo===codigo);
+  ['grupos','novo','geral'].forEach(a=>document.getElementById('aba-'+a).style.display='none');
+  document.getElementById('tela-relatorio').style.display='block';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  renderRelatorioCompleto(grupo,resps);
+}
+
+const FASES_NOMES=['Compulsão de se Provar','Dedicação Intensa','Negligência das Necessidades','Repressão de Conflitos','Revisão dos Valores','Negação dos Problemas','Recolhimento','Mudanças de Comportamento','Despersonalização','Vazio Interno','Depressão','Síndrome de Burnout'];
+const FASES_ICONS=['💪','⚡','😴','😶','🎭','🙈','🐛','🌀','🎭','🕳️','🌧️','🔥'];
+
+function renderRelatorioCompleto(grupo,resps){
+  const el=document.getElementById('rel-area');
+  const n=resps.length;
+  if(!grupo){el.innerHTML='<div class="empty">Grupo não encontrado.</div>';return;}
+
+  // Calcular médias por fase
+  const fasePcts=FASES_NOMES.map((nome,i)=>{
+    if(n===0)return{nome,pct:0,icon:FASES_ICONS[i]};
+    const med=resps.reduce((s,r)=>s+(r.fases?.['f'+(i+1)]||0),0)/n;
+    return{nome,pct:Math.round(med),icon:FASES_ICONS[i]};
+  });
+
+  const dist={ok:0,mod:0,hi:0};
+  resps.forEach(r=>{const fa=r.faseAtiva||0;const mg=r.mediaGeral||0;if(fa<=4&&mg<45)dist.ok++;else if(fa<=7)dist.mod++;else dist.hi++;});
+
+  const generos={};resps.forEach(r=>{const g=r.genero||'Não inf.';generos[g]=(generos[g]||0)+1;});
+  const vinculos={};resps.forEach(r=>{const v=r.vinculo||'Não inf.';vinculos[v]=(vinculos[v]||0)+1;});
+
+  // Gráfico SVG de barras
+  const svgW=Math.min(window.innerWidth-64,780);
+  const svgH=220;
+  const barW=Math.floor((svgW-60)/12)-4;
+  const svgBars=fasePcts.map((f,i)=>{
+    const h=Math.round((f.pct/100)*(svgH-50));
+    const x=40+i*(barW+4);
+    const y=svgH-30-h;
+    const cor=f.pct>=70?'#C0392B':f.pct>=45?'#E67E22':'#27AE60';
+    return`<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="3" fill="${cor}" opacity=".85"/>
+<text x="${x+barW/2}" y="${y-4}" text-anchor="middle" font-size="9" fill="${cor}" font-weight="700">${f.pct>0?f.pct+'%':''}</text>
+<text x="${x+barW/2}" y="${svgH-14}" text-anchor="middle" font-size="9" fill="var(--tf)">F${i+1}</text>`;
+  }).join('');
+
+  let html=`<button class="btn btn-ghost" onclick="aba('grupos')" style="margin-bottom:12px">← Voltar aos grupos</button>`;
+  html+=`<div class="rel-hero">
+    <h2>📊 ${grupo.curso} — ${grupo.turnoNome}</h2>
+    <p><span class="cod-badge" style="background:rgba(255,255,255,.2)">${grupo.codigo}</span> &nbsp;·&nbsp; ${grupo.semestre}º Sem. &nbsp;·&nbsp; ${grupo.publico}</p>
+    ${grupo.foco?`<p style="margin-top:6px;font-size:12px;opacity:.75">🎯 ${grupo.foco}</p>`:''}
+  </div>`;
+
+  html+=`<div class="rel-stats">
+    <div class="rel-stat"><div class="rel-stat-num">${n}</div><div class="rel-stat-lbl">Respostas</div></div>
+    <div class="rel-stat"><div class="rel-stat-num" style="color:#27AE60">${dist.ok}</div><div class="rel-stat-lbl">Baixo risco</div></div>
+    <div class="rel-stat"><div class="rel-stat-num" style="color:#C0392B">${dist.mod+dist.hi}</div><div class="rel-stat-lbl">Atenção/Alto</div></div>
+  </div>`;
+
+  // Gráfico
+  html+=`<div class="sc"><div class="sc-ttl">📈 Média do grupo por fase</div>
+    <div class="grafico-wrap">
+      <svg width="${svgW}" height="${svgH}" style="overflow:visible">
+        <line x1="40" y1="${svgH-30}" x2="${svgW}" y2="${svgH-30}" stroke="var(--bor)" stroke-width="1"/>
+        <line x1="40" y1="${Math.round(svgH-30-(70/100)*(svgH-50))}" x2="${svgW}" y2="${Math.round(svgH-30-(70/100)*(svgH-50))}" stroke="#C0392B" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
+        <text x="36" y="${Math.round(svgH-30-(70/100)*(svgH-50))+4}" text-anchor="end" font-size="9" fill="#C0392B" opacity=".7">70%</text>
+        <line x1="40" y1="${Math.round(svgH-30-(45/100)*(svgH-50))}" x2="${svgW}" y2="${Math.round(svgH-30-(45/100)*(svgH-50))}" stroke="#E67E22" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
+        <text x="36" y="${Math.round(svgH-30-(45/100)*(svgH-50))+4}" text-anchor="end" font-size="9" fill="#E67E22" opacity=".7">45%</text>
+        ${svgBars}
+      </svg>
+    </div>
+    <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#27AE60;font-weight:700">● Baixo (&lt;45%)</span>
+      <span style="font-size:11px;color:#E67E22;font-weight:700">● Moderado (45–69%)</span>
+      <span style="font-size:11px;color:#C0392B;font-weight:700">● Alto (≥70%)</span>
+    </div>
+  </div>`;
+
+  // Barras detalhadas
+  html+=`<div class="sc"><div class="sc-ttl">🔥 Detalhamento por fase</div>`;
+  fasePcts.forEach((f,i)=>{
+    const cor=f.pct>=70?'#C0392B':f.pct>=45?'#E67E22':'#27AE60';
+    const cls=f.pct>=70?'hi':f.pct>=45?'mod':'ok';
+    html+=`<div class="rel-row ${cls}">
+      <span style="font-size:10px;font-weight:700;color:var(--tf)">F${i+1}</span>
+      <span style="font-size:12px;font-weight:600;color:var(--txt)">${f.icon} ${f.nome}</span>
+      <div class="rel-row-bar-wrap"><div class="rel-row-bar" style="width:${f.pct}%;background:${cor}"></div></div>
+      <span style="font-size:12px;font-weight:700;color:${cor};text-align:right">${f.pct}%</span>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // Perfil
+  html+=`<div class="sc"><div class="sc-ttl">👥 Perfil dos Participantes</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><div style="font-size:11px;font-weight:700;color:var(--tf);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Gênero</div>${Object.entries(generos).map(([k,v])=>`<div style="font-size:13px;color:var(--ts)">${k}: <strong>${v}</strong></div>`).join('')}</div>
+      <div><div style="font-size:11px;font-weight:700;color:var(--tf);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Vínculo</div>${Object.entries(vinculos).map(([k,v])=>`<div style="font-size:13px;color:var(--ts)">${k}: <strong>${v}</strong></div>`).join('')}</div>
+    </div>
+  </div>`;
+
+  // Lista de participantes
+  if(n>0){
+    html+=`<div class="sc"><div class="sc-ttl">📋 Participantes (${n})</div>`;
+    html+=`<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:8px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--tf);text-transform:uppercase;letter-spacing:.3px"><span>Nome</span><span>Fase</span><span>Risco</span><span></span></div>`;
+    resps.forEach(r=>{
+      const fa=r.faseAtiva||0;const mg=r.mediaGeral||0;
+      const isOk=fa<=4&&mg<45;const isHi=fa>7;
+      const rCls=isOk?'risco-ok':isHi?'risco-hi':'risco-mod';
+      const rTxt=isOk?'🟢 Baixo':isHi?'🔴 Alto':'🟡 Moderado';
+      const zap=r.zap?r.zap.replace(/\D/g,''):'';
+      const msgWa=encodeURIComponent(`Olá ${r.nome}! Aqui está seu resultado do Mapa do Burnout (Facunicamps):\n\n🔥 Fase mais ativa: Fase ${fa} — ${FASES_NOMES[fa-1]||'—'}\n📊 Nível de risco: ${rTxt.replace(/[🟢🔴🟡]/g,'').trim()}\n\n${mg?'Média geral: '+mg+'%\n\n':''}Para mais informações, acesse: https://luciakratz-arch.github.io/Psi-Facunicamps/`);
+      html+=`<div class="aluno-row">
+        <span style="font-weight:600;color:var(--txt)">${r.nome||'—'}</span>
+        <span style="font-size:12px;color:var(--ts)">F${fa}</span>
+        <span class="risco-badge ${rCls}">${rTxt}</span>
+        ${zap?`<a href="https://wa.me/55${zap}?text=${msgWa}" target="_blank"><button class="btn btn-wa btn-sm">💬</button></a>`:`<span></span>`}
+      </div>`;
+    });
+    html+=`</div>`;
+
+    // Botão enviar para todos com zap
+    const comZap=resps.filter(r=>r.zap);
+    if(comZap.length>0){
+      html+=`<div class="sc" style="border-left:4px solid #25D366"><div class="sc-ttl">💬 Enviar Resultados por WhatsApp</div>
+        <p style="font-size:13px;color:var(--ts);margin-bottom:12px">${comZap.length} participante${comZap.length>1?'s têm':'tem'} WhatsApp cadastrado. Clique em cada 💬 na lista acima para enviar individualmente.</p>
+        <p style="font-size:12px;color:var(--tf)">O sistema abre o WhatsApp com a mensagem já preenchida — é só enviar.</p>
+      </div>`;
+    }
+  }else{
+    html+=`<div class="sc"><div class="empty">📭 Nenhuma resposta ainda.<br><br>Compartilhe o código <strong>${grupo.codigo}</strong> com os alunos.</div></div>`;
+  }
+
+  html+=`<div class="btn-row">
+    <button class="btn btn-ghost" onclick="aba('grupos')">← Voltar</button>
+    <button class="btn btn-sec btn-sm" onclick="copiarCodigo('${grupo.codigo}')">📋 Copiar Código</button>
+    <button class="btn btn-wa btn-sm" onclick="compartilharWhats('${grupo.codigo}')">💬 Compartilhar</button>
+  </div>`;
+
+  el.innerHTML=html;
+}
+
+// ---- VISÃO GERAL ----
+function renderVisaoGeral(){
+  const el=document.getElementById('visao-geral-area');
+  const n=todosGrupos.length;
+  const totalResps=todasRespostas.length;
+  const dist={ok:0,mod:0,hi:0};
+  todasRespostas.forEach(r=>{const fa=r.faseAtiva||0;const mg=r.mediaGeral||0;if(fa<=4&&mg<45)dist.ok++;else if(fa<=7)dist.mod++;else dist.hi++;});
+
+  // Médias globais por fase
+  const fasePcts=FASES_NOMES.map((nome,i)=>{
+    if(totalResps===0)return{nome,pct:0};
+    const med=todasRespostas.reduce((s,r)=>s+(r.fases?.['f'+(i+1)]||0),0)/totalResps;
+    return{nome,pct:Math.round(med)};
+  });
+
+  let html=`<div class="rel-stats">
+    <div class="rel-stat"><div class="rel-stat-num">${n}</div><div class="rel-stat-lbl">Grupos</div></div>
+    <div class="rel-stat"><div class="rel-stat-num">${totalResps}</div><div class="rel-stat-lbl">Total Respostas</div></div>
+    <div class="rel-stat"><div class="rel-stat-num" style="color:#C0392B">${dist.mod+dist.hi}</div><div class="rel-stat-lbl">Atenção/Alto</div></div>
+  </div>`;
+
+  html+=`<div class="sc"><div class="sc-ttl">📊 Média geral — todas as turmas</div>`;
+  fasePcts.forEach((f,i)=>{
+    const cor=f.pct>=70?'#C0392B':f.pct>=45?'#E67E22':'#27AE60';
+    const cls=f.pct>=70?'hi':f.pct>=45?'mod':'ok';
+    html+=`<div class="rel-row ${cls}">
+      <span style="font-size:10px;font-weight:700;color:var(--tf)">F${i+1}</span>
+      <span style="font-size:12px;font-weight:600;color:var(--txt)">${FASES_ICONS[i]} ${f.nome}</span>
+      <div class="rel-row-bar-wrap"><div class="rel-row-bar" style="width:${f.pct}%;background:${cor}"></div></div>
+      <span style="font-size:12px;font-weight:700;color:${cor};text-align:right">${f.pct}%</span>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // Resumo por grupo
+  html+=`<div class="sc"><div class="sc-ttl">📋 Resumo por Grupo</div>`;
+  if(n===0){html+='<div class="empty">Nenhum grupo cadastrado.</div>';}
+  else{
+    todosGrupos.forEach(g=>{
+      const resps=todasRespostas.filter(r=>r.codigo===g.codigo);
+      const nr=resps.length;
+      const hiRisk=resps.filter(r=>(r.faseAtiva||0)>7).length;
+      html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--sur2);border-radius:10px;margin-bottom:6px;flex-wrap:wrap">
+        <span class="cod-badge">${g.codigo}</span>
+        <span style="flex:1;font-size:13px;font-weight:600;color:var(--txt)">${g.curso} — ${g.turnoNome}</span>
+        <span style="font-size:12px;color:var(--ts)">${nr} resp.</span>
+        ${hiRisk>0?`<span class="risco-badge risco-hi">${hiRisk} alto risco</span>`:''}
+        <button class="btn btn-sm btn-pri" onclick="verRelatorio('${g.codigo}')">📊 Ver</button>
+      </div>`;
+    });
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
+// ---- UTILS ----
+function copiarCodigo(cod){
+  navigator.clipboard.writeText(cod).then(()=>toast('✅ Código '+cod+' copiado!')).catch(()=>{
+    const el=document.createElement('textarea');el.value=cod;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);toast('✅ Código '+cod+' copiado!');
+  });
+}
+function compartilharWhats(cod){
+  const msg=encodeURIComponent('🎓 *Mapa do Burnout — Facunicamps*\n\nOlá! Para participar da nossa pesquisa, acesse o link abaixo e informe o código da sua turma:\n\n🔗 https://luciakratz-arch.github.io/Psi-Facunicamps/\n\n📌 Código da turma: *'+cod+'*\n\nO questionário é rápido e confidencial. Obrigada pela participação! 🙏');
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+async function deletarGrupo(id,cod){
+  if(!confirm('Excluir o grupo '+cod+'? As respostas dos alunos não serão apagadas.'))return;
+  try{
+    await fetch(DB+'/'+COL_GRUPOS+'/'+id+'.json',{method:'DELETE'});
+    toast('🗑️ Grupo '+cod+' removido.');
+    await carregarTudo();
+  }catch(e){toast('❌ Erro ao remover.');}
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
