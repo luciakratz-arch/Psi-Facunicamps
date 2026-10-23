@@ -72,11 +72,6 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 .codigo-box p{font-size:12px;color:var(--ts);margin-bottom:8px;line-height:1.5}
 .inp-codigo{letter-spacing:2px;font-weight:700;text-transform:uppercase;font-family:var(--ff1)}
 
-.lgpd-box{background:var(--sur2);border:1px solid var(--bor);border-radius:12px;padding:13px 15px;font-size:12px;color:var(--ts);line-height:1.6;margin-bottom:12px}
-.lgpd-box h4{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:3px}
-.lgpd-ck{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:16px}
-.lgpd-ck input{width:18px;height:18px;flex-shrink:0;accent-color:var(--bm);margin-top:2px}
-.lgpd-ck span{font-size:13px;color:var(--ts);line-height:1.5}
 
 .btn-row{display:flex;gap:10px;margin-top:20px}
 .btn{flex:1;min-height:52px;padding:13px 18px;border:none;border-radius:12px;font-family:var(--ff1);font-weight:700;font-size:15px;letter-spacing:.3px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
@@ -370,11 +365,6 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <p>Informe o código fornecido pelo(a) professor(a) ou coordenador(a). Ele vincula sua resposta ao grupo para o relatório coletivo.</p>
     <input class="inp inp-codigo" id="codigo" type="text" maxlength="20" placeholder="Ex: TURMA2024A" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
   </div>
-  <div class="lgpd-box">
-    <h4>&#128274; Privacidade e LGPD</h4>
-    <p>Seus dados são usados exclusivamente para este instrumento e para o relatório do grupo. Não serão compartilhados com terceiros. Armazenamento seguro conforme Lei nº 13.709/2018.</p>
-  </div>
-  <label class="lgpd-ck"><input type="checkbox" id="lgpd"><span>Autorizo o uso dos meus dados para fins desta avaliação da Facunicamps.</span></label>
   <div class="btn-row">
     <button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button>
     <button class="btn btn-pri" onclick="valStep2()">Próximo &#8594;</button>
@@ -545,7 +535,7 @@ function valStep2(){
   const z=document.getElementById('zap').value.trim();
   const c=document.getElementById('codigo').value.trim();
   const tt=document.getElementById('tipo_trabalho').value;
-  const l=document.getElementById('lgpd').checked;
+  const l=true; // consentimento já dado no TCLE
   if(!n){alert('Por favor, informe seu nome.');return}
   if(!a||a<16||a>80){alert('Informe uma idade válida (16–80).');return}
   if(!g){alert('Selecione seu gênero.');return}
