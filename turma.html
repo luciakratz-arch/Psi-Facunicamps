@@ -204,26 +204,6 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
       </div>
 
       <div class="fg">
-        <label class="lbl" for="ng-publico">Público-alvo <span class="req">*</span></label>
-        <select class="sel" id="ng-publico">
-          <option value="">Selecione...</option>
-          <option>Universitários (geral)</option>
-          <option>Universitários — Homens</option>
-          <option>Universitários — Mulheres</option>
-          <option>Jovens pré-vestibular</option>
-          <option>Mulheres</option>
-          <option>Homens</option>
-          <option>Pós-graduandos</option>
-          <option>Extensionistas</option>
-        </select>
-      </div>
-
-      <div class="fg">
-        <label class="lbl" for="ng-foco">Foco da Pesquisa <span class="req">*</span></label>
-        <input class="inp" id="ng-foco" type="text" placeholder="Ex: Burnout em estudantes de saúde no noturno">
-      </div>
-
-      <div class="fg">
         <label class="lbl" for="ng-prof">Nome da Professora / Responsável <span class="req">*</span></label>
         <input class="inp" id="ng-prof" type="text" placeholder="Ex: Profa. Dra. Lucia Kratz" value="Profa. Dra. Lucia Kratz">
       </div>
@@ -339,10 +319,9 @@ async function salvarTurma(){
   const ano=document.getElementById('ng-ano').value;
   const semAno=document.getElementById('ng-sem-ano').value;
   const semestre=document.getElementById('ng-semestre').value;
-  const foco=document.getElementById('ng-foco').value.trim();
-  const publico=document.getElementById('ng-publico').value;
+
   const prof=document.getElementById('ng-prof').value.trim();
-  if(!curso||!turno||!ano||!semAno||!semestre||!foco||!publico||!prof){
+  if(!curso||!turno||!ano||!semAno||!semestre||!prof){
     toast('⚠️ Preencha todos os campos obrigatórios.');return;
   }
   const btn=document.getElementById('btn-salvar');
@@ -362,7 +341,7 @@ async function salvarTurma(){
     codigo:codigoGerado,
     ano,semAno,curso,turno,
     turnoNome:turnoNomes[turno]||turno,
-    semestre,foco,publico,prof,obs,
+    semestre,prof,obs,
     criado:new Date().toISOString(),
     ts:Date.now()
   };
@@ -383,8 +362,6 @@ function mostrarSucesso(data){
   document.getElementById('suc-detalhes').innerHTML=
     `<b>Curso:</b> ${data.curso}<br>`+
     `<b>Turno:</b> ${data.turnoNome} · ${data.semestre}º Semestre do curso<br>`+
-    `<b>Público:</b> ${data.publico}<br>`+
-    `<b>Foco:</b> ${data.foco}<br>`+
     `<b>Responsável:</b> ${data.prof}<br><br>`+
     `<span style="font-size:11px;color:var(--tf)">Compartilhe este código com os alunos para que cadastrem seus grupos.</span>`;
   window.scrollTo({top:0,behavior:'smooth'});
@@ -406,8 +383,8 @@ function compartilharWhats(){
 function cadastrarOutra(){
   document.getElementById('area-sucesso').style.display='none';
   document.getElementById('area-form').style.display='block';
-  ['ng-curso','ng-turno','ng-semestre','ng-publico','ng-ano','ng-sem-ano'].forEach(id=>document.getElementById(id).value='');
-  ['ng-foco','ng-obs','ng-curso-outro'].forEach(id=>document.getElementById(id).value='');
+  ['ng-curso','ng-turno','ng-semestre','ng-ano','ng-sem-ano'].forEach(id=>document.getElementById(id).value='');
+  ['ng-obs','ng-curso-outro'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('ng-prof').value='Profa. Dra. Lucia Kratz';
   document.getElementById('cod-preview').style.display='none';
   document.getElementById('outro-curso-box').style.display='none';
