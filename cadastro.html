@@ -148,6 +148,18 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
         <div class="cod-val" id="cod-preview-val">—</div>
       </div>
 
+      <!-- Público-alvo da pesquisa -->
+      <div class="fg">
+        <label class="lbl" for="ng-publico">Público-alvo da Pesquisa <span class="req">*</span></label>
+        <input class="inp" id="ng-publico" type="text" placeholder="Ex: Mulheres universitárias do noturno de Direito">
+      </div>
+
+      <!-- WhatsApp do líder -->
+      <div class="fg">
+        <label class="lbl" for="ng-zap">WhatsApp do Líder do Grupo <span class="req">*</span></label>
+        <input class="inp" id="ng-zap" type="tel" placeholder="Ex: 62991546757 (só números, com DDD)">
+      </div>
+
       <!-- Integrantes -->
       <div class="fg">
         <label class="lbl">Integrantes do Grupo <span class="req">*</span></label>
@@ -204,17 +216,83 @@ let gruposExistentes=[];
 let codigoGerado='';
 let buscaTimer=null;
 
-// Preenche código da turma automaticamente se vier na URL
-(function(){
+// Lógica de URL params ao carregar
+window.addEventListener('DOMContentLoaded',async function(){
   const params=new URLSearchParams(window.location.search);
-  const t=params.get('turma');
-  if(t){
-    window.addEventListener('DOMContentLoaded',function(){
-      const el=document.getElementById('cod-turma');
-      if(el){el.value=t.toUpperCase();buscarTurma();}
-    });
+  const turmaParam=params.get('turma');
+  const editarParam=params.get('editar');
+
+  if(editarParam){
+    // Modo edição/consulta: busca o grupo pelo código
+    await carregarGrupoPorCodigo(editarParam.toUpperCase());
+  } else if(turmaParam){
+    // Preenche código da turma automaticamente
+    const el=document.getElementById('cod-turma');
+    if(el){el.value=turmaParam.toUpperCase();buscarTurma();}
   }
-})();
+});
+
+let grupoEditandoKey=null;
+
+async function carregarGrupoPorCodigo(cod){
+  toast('🔍 Carregando dados do grupo...',2000);
+  try{
+    const r=await fetch(DB+'/'+COL_GRUPOS+'.json');
+    const d=await r.json();
+    if(!d){toast('⚠️ Grupo não encontrado.');return;}
+    const found=Object.entries(d).find(([k,v])=>v.codigoGrupo===cod);
+    if(!found){toast('⚠️ Grupo não encontrado.');return;}
+    const [key,grupo]=found;
+    grupoEditandoKey=key;
+    // Preenche formulário com dados existentes
+    document.getElementById('cod-turma').value=grupo.codigoTurma||'';
+    await buscarTurma();
+    document.getElementById('ng-nome').value=grupo.nomeGrupo||'';
+    document.getElementById('ng-zap').value=grupo.zapLider||'';
+    // Preenche integrantes
+    const lista=document.getElementById('integrantes-lista');
+    lista.innerHTML='';
+    const ints=grupo.integrantes||[];
+    ints.forEach((nome,i)=>{
+      const div=document.createElement('div');
+      div.className='integrante-row';
+      div.innerHTML=`<input class="inp" type="text" value="${nome}" placeholder="Nome completo do integrante ${i+1}"><button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button>`;
+      lista.appendChild(div);
+    });
+    if(lista.children.length<2)adicionarIntegrante();
+    // Muda botão para "Salvar Alterações"
+    const btn=document.getElementById('btn-salvar');
+    btn.innerHTML='💾 Salvar Alterações';
+    btn.onclick=salvarEdicao;
+    // Mostra aviso de edição
+    const aviso=document.createElement('div');
+    aviso.style.cssText='background:#FFF8E1;border:1px solid #F0C030;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#7A5C00';
+    aviso.innerHTML='✏️ <b>Modo edição</b> — você está editando o grupo <b>'+cod+'</b>';
+    document.querySelector('.card').insertBefore(aviso,document.querySelector('.card').firstChild);
+    toast('✅ Dados carregados! Edite e salve.');
+  }catch(e){toast('❌ Erro ao carregar grupo.');}
+}
+
+async function salvarEdicao(){
+  if(!turmaAtual&&!grupoEditandoKey){toast('⚠️ Erro: turma não identificada.');return;}
+  const nome=document.getElementById('ng-nome').value.trim();
+  const zap=document.getElementById('ng-zap').value.trim().replace(/\D/g,'');
+  const integrantes=getIntegrantes();
+  if(!nome){toast('⚠️ Informe o nome do grupo.');return;}
+  if(!zap||zap.length<10){toast('⚠️ Informe o WhatsApp do líder com DDD.');return;}
+  if(integrantes.length<2){toast('⚠️ Adicione pelo menos 2 integrantes.');return;}
+  const btn=document.getElementById('btn-salvar');
+  btn.disabled=true;btn.textContent='⏳ Salvando...';
+  const upd={nomeGrupo:nome,zapLider:zap,integrantes,editado:new Date().toISOString()};
+  try{
+    await fetch(DB+'/'+COL_GRUPOS+'/'+grupoEditandoKey+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(upd)});
+    toast('✅ Grupo atualizado com sucesso!',3000);
+    btn.disabled=false;btn.innerHTML='💾 Salvar Alterações';
+  }catch(e){
+    toast('❌ Erro ao salvar alterações.');
+    btn.disabled=false;btn.innerHTML='💾 Salvar Alterações';
+  }
+}
 
 function toast(msg,dur=2800){
   const el=document.getElementById('toast');
@@ -236,12 +314,12 @@ async function buscarTurma(){
   buscaTimer=setTimeout(async()=>{
     load.style.display='block';
     try{
-      const r=await fetch(DB+'/'+COL_TURMAS+'.json?orderBy=%22codigo%22&equalTo=%22'+encodeURIComponent(cod)+'%22');
+      const r=await fetch(DB+'/'+COL_TURMAS+'.json');
       const d=await r.json();
       load.style.display='none';
-      if(d&&Object.keys(d).length>0){
-        const key=Object.keys(d)[0];
-        turmaAtual={...d[key],_key:key};
+      const found=d?Object.entries(d).find(([k,v])=>v.codigo&&v.codigo.toUpperCase()===cod.toUpperCase()):null;
+      if(found){
+        turmaAtual={...found[1],_key:found[0]};
         document.getElementById('ti-cod').textContent=turmaAtual.codigo;
         document.getElementById('ti-curso').textContent=turmaAtual.curso||'';
         document.getElementById('ti-turno').textContent=turmaAtual.turnoNome||turmaAtual.turno||'';
@@ -301,8 +379,10 @@ function getIntegrantes(){
 async function salvarGrupo(){
   if(!turmaAtual){toast('⚠️ Informe o código da turma primeiro.');return;}
   const nome=document.getElementById('ng-nome').value.trim();
+  const zap=document.getElementById('ng-zap').value.trim().replace(/\D/g,'');
   const integrantes=getIntegrantes();
   if(!nome){toast('⚠️ Informe o nome do grupo.');return;}
+  if(!zap||zap.length<10){toast('⚠️ Informe o WhatsApp do líder com DDD.');return;}
   if(integrantes.length<2){toast('⚠️ Adicione pelo menos 2 integrantes.');return;}
   const btn=document.getElementById('btn-salvar');
   btn.disabled=true;btn.textContent='⏳ Salvando...';
@@ -314,6 +394,7 @@ async function salvarGrupo(){
     codigoGrupo:codigoGerado,
     codigoTurma:turmaAtual.codigo,
     nomeGrupo:nome,
+    zapLider:zap,
     integrantes,
     curso:turmaAtual.curso||'',
     turno:turmaAtual.turno||'',
@@ -324,8 +405,12 @@ async function salvarGrupo(){
     ts:Date.now()
   };
   try{
-    await fetch(DB+'/'+COL_GRUPOS+'.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const resp=await fetch(DB+'/'+COL_GRUPOS+'.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const res=await resp.json();
+    data._key=res.name;
     mostrarSucesso(data);
+    // Envia link automaticamente para o WhatsApp do líder
+    setTimeout(()=>enviarLinkLider(data),800);
   }catch(e){
     toast('❌ Erro ao salvar. Tente novamente.');
     btn.disabled=false;btn.innerHTML='💾 Cadastrar Grupo e Gerar Código';
@@ -359,10 +444,32 @@ function irQuestionario(){
   window.location.href='https://luciakratz-arch.github.io/Psi-Facunicamps/?grupo='+encodeURIComponent(cod);
 }
 
+function getLinkQuestionario(cod){
+  return 'https://luciakratz-arch.github.io/Psi-Facunicamps/?grupo='+encodeURIComponent(cod);
+}
+
+function getLinkEdicao(cod){
+  return 'https://luciakratz-arch.github.io/Psi-Facunicamps/cadastro.html?editar='+encodeURIComponent(cod);
+}
+
+function enviarLinkLider(data){
+  const zap='55'+data.zapLider.replace(/^0/,'');
+  const cod=data.codigoGrupo;
+  const linkQ=getLinkQuestionario(cod);
+  const linkE=getLinkEdicao(cod);
+  const msg=encodeURIComponent(
+    `Olá! 🎓 Grupo *${data.nomeGrupo}* cadastrado com sucesso!\n\n`+
+    `🔑 Código: *${cod}*\n\n`+
+    `📝 Link do questionário (compartilhe com o grupo):\n${linkQ}\n\n`+
+    `✏️ Para consultar ou editar o cadastro do grupo:\n${linkE}`
+  );
+  window.open('https://wa.me/'+zap+'?text='+msg,'_blank');
+}
+
 function compartilharWhats(){
   const cod=document.getElementById('suc-cod-val').textContent;
-  const link='https://luciakratz-arch.github.io/Psi-Facunicamps/';
-  const msg=encodeURIComponent(`Olá! 👥\n\nNosso grupo já está cadastrado no *Mapa do Burnout Universitário* — Facunicamps.\n\nUse o código abaixo ao responder o questionário:\n*${cod}*\n\nAcesse: ${link}\n\n⚠️ Todos do grupo precisam responder individualmente usando este código!`);
+  const link=getLinkQuestionario(cod);
+  const msg=encodeURIComponent(`Olá! 👥\n\nNosso grupo está cadastrado no *Mapa do Burnout Universitário* — Facunicamps.\n\n🔑 Código do grupo: *${cod}*\n\n📝 Responda o questionário:\n${link}\n\n⚠️ Todos do grupo precisam responder individualmente usando este código!`);
   window.open('https://wa.me/?text='+msg,'_blank');
 }
 
