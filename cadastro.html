@@ -204,6 +204,18 @@ let gruposExistentes=[];
 let codigoGerado='';
 let buscaTimer=null;
 
+// Preenche código da turma automaticamente se vier na URL
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const t=params.get('turma');
+  if(t){
+    window.addEventListener('DOMContentLoaded',function(){
+      const el=document.getElementById('cod-turma');
+      if(el){el.value=t.toUpperCase();buscarTurma();}
+    });
+  }
+})();
+
 function toast(msg,dur=2800){
   const el=document.getElementById('toast');
   el.textContent=msg;el.classList.add('show');
