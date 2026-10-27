@@ -395,7 +395,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <h2>&#128202; Relatório do Grupo</h2>
     <p>Informe o código do grupo para acessar o relatório consolidado com os resultados de todos os participantes deste código.</p>
     <label class="lbl">Código do Grupo</label>
-    <input class="inp inp-codigo" id="codigo-rel" type="text" maxlength="20" placeholder="Ex: TURMA2024A" oninput="this.value=this.value.toUpperCase()">
+    <input class="inp inp-codigo" id="codigo-rel" type="text" maxlength="25" placeholder="Ex: 26-2-PSI-MAT-G001" oninput="this.value=this.value.toUpperCase()">
     <div id="codigos-sugeridos" style="display:none;margin-top:8px">
       <div style="font-size:11px;font-weight:700;color:var(--tf);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">&#128278; Grupos com respostas:</div>
       <div id="chips-codigos" style="display:flex;flex-wrap:wrap;gap:6px"></div>
@@ -417,9 +417,11 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 
 <!-- RODAPÉ -->
 <div style="text-align:center;padding:24px 16px 40px;margin-top:8px">
-  <a href="painel.html" style="font-size:11px;color:var(--tf);text-decoration:none;font-weight:600;letter-spacing:.3px;opacity:.6">🎓 Acesso Professora</a>
+  <a href="cadastro.html" style="font-size:11px;color:var(--tf);text-decoration:none;font-weight:600;letter-spacing:.3px;opacity:.6">👥 Cadastrar Grupo</a>
   &nbsp;&nbsp;·&nbsp;&nbsp;
-  <a href="cadastro.html" style="font-size:11px;color:var(--tf);text-decoration:none;font-weight:600;letter-spacing:.3px;opacity:.6">📋 Cadastrar Turma</a>
+  <a href="turma.html" style="font-size:11px;color:var(--tf);text-decoration:none;font-weight:600;letter-spacing:.3px;opacity:.6">🎓 Cadastrar Turma</a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="painel.html" style="font-size:11px;color:var(--tf);text-decoration:none;font-weight:600;letter-spacing:.3px;opacity:.6">📊 Painel</a>
 </div>
 
 <script>
