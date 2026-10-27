@@ -241,8 +241,13 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
       <button class="suc-copiar" onclick="copiarCodigo()">📋 Copiar código</button>
     </div>
     <div class="suc-info" id="suc-detalhes"></div>
+    <div style="background:var(--sur2);border:1px solid var(--bor);border-radius:10px;padding:14px 16px;margin-top:16px;text-align:left">
+      <div style="font-size:11px;font-weight:700;color:var(--ts);letter-spacing:.5px;margin-bottom:6px">🔗 LINK DE CADASTRO DOS GRUPOS</div>
+      <div id="suc-link-cadastro" style="font-size:12px;color:var(--bm);word-break:break-all;font-weight:600;margin-bottom:10px">—</div>
+      <button class="suc-copiar" onclick="copiarLinkCadastro()" style="width:100%">📋 Copiar link de cadastro</button>
+    </div>
     <button class="btn btn-pri" style="margin-top:18px" onclick="cadastrarOutra()">➕ Cadastrar outra turma</button>
-    <button class="btn btn-sec" onclick="compartilharWhats()">💬 Enviar código pelo WhatsApp</button>
+    <button class="btn btn-sec" onclick="compartilharWhats()">💬 Enviar link pelo WhatsApp</button>
     <button class="btn btn-sec" style="margin-top:6px" onclick="window.location.href='painel.html'">← Ir para o Painel</button>
   </div>
 
@@ -359,6 +364,8 @@ function mostrarSucesso(data){
   const suc=document.getElementById('area-sucesso');
   suc.style.display='block';
   document.getElementById('suc-cod-val').textContent=data.codigo;
+  const linkCad='https://luciakratz-arch.github.io/Psi-Facunicamps/cadastro.html?turma='+encodeURIComponent(data.codigo);
+  document.getElementById('suc-link-cadastro').textContent=linkCad;
   document.getElementById('suc-detalhes').innerHTML=
     `<b>Curso:</b> ${data.curso}<br>`+
     `<b>Turno:</b> ${data.turnoNome} · ${data.semestre}º Semestre do curso<br>`+
@@ -373,10 +380,17 @@ function copiarCodigo(){
   catch(e){toast('Código: '+cod);}
 }
 
+function copiarLinkCadastro(){
+  const cod=document.getElementById('suc-cod-val').textContent;
+  const link='https://luciakratz-arch.github.io/Psi-Facunicamps/cadastro.html?turma='+encodeURIComponent(cod);
+  try{navigator.clipboard.writeText(link);toast('✅ Link copiado!');}
+  catch(e){toast('Link: '+link);}
+}
+
 function compartilharWhats(){
   const cod=document.getElementById('suc-cod-val').textContent;
-  const link='https://luciakratz-arch.github.io/Psi-Facunicamps/cadastro.html';
-  const msg=encodeURIComponent(`Olá! 🎓\n\nPara participar da pesquisa *Mapa do Burnout Universitário*, um integrante do grupo deve acessar o link abaixo e cadastrar o grupo da equipe.\n\n📋 Link de cadastro do grupo:\n${link}\n\n🔑 Código da turma: *${cod}*\n\nApós cadastrar o grupo, todos os integrantes respondem o questionário individualmente usando o código do grupo gerado.`);
+  const link='https://luciakratz-arch.github.io/Psi-Facunicamps/cadastro.html?turma='+encodeURIComponent(cod);
+  const msg=encodeURIComponent(`Olá! 🎓\n\nPara participar da pesquisa *Mapa do Burnout Universitário*, um integrante do grupo deve acessar o link abaixo e cadastrar o grupo da equipe.\n\n📋 Link de cadastro (já com o código da turma):\n${link}\n\nApós cadastrar o grupo, todos os integrantes respondem o questionário individualmente usando o código do grupo gerado.`);
   window.open('https://wa.me/?text='+msg,'_blank');
 }
 
