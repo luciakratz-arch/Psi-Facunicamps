@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Cadastro de Turma — Facunicamps</title>
+<title>Cadastro de Grupo — Facunicamps</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -28,37 +28,43 @@ body{min-height:100%;background:var(--bg);color:var(--txt);font-family:var(--ff2
 button{cursor:pointer;font-family:var(--ff2)}
 input,select,textarea{font-family:var(--ff2);font-size:16px}
 
-/* HEADER */
 .hdr{background:linear-gradient(135deg,var(--bd),var(--bm));padding:11px 16px 13px;display:flex;align-items:center;gap:12px;border-bottom:4px solid var(--gold);position:sticky;top:env(safe-area-inset-top,0);z-index:200;box-shadow:var(--sh2)}
 .hdr-icon{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
 .hdr-text{display:flex;flex-direction:column}
 .hdr-name{font-family:var(--ff1);font-weight:900;font-size:16px;color:#fff;letter-spacing:.3px;line-height:1.1}
 .hdr-sub{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.4px;font-weight:600}
 
-/* LAYOUT */
 .main{max-width:600px;margin:0 auto;padding:24px 16px 60px}
 
-/* CARD */
 .card{background:var(--sur);border:1px solid var(--bor);border-radius:20px;padding:24px;box-shadow:var(--sh2)}
 .card-ttl{font-family:var(--ff1);font-size:13px;font-weight:700;color:var(--bm);margin-bottom:18px;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.5px}
 
-/* FORM */
 .fg{margin-bottom:16px}
 .lbl{display:block;font-size:12px;font-weight:600;color:var(--ts);margin-bottom:5px;letter-spacing:.2px}
 .req{color:var(--red2)}
 .inp,.sel{width:100%;padding:12px 14px;border:1.5px solid var(--bor);border-radius:12px;background:var(--inp);color:var(--txt);font-size:15px;outline:none;transition:border-color .2s;-webkit-appearance:none}
 .inp:focus,.sel:focus{border-color:var(--bm);box-shadow:0 0 0 3px rgba(26,82,184,.14)}
 .sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%234A6080' fill='none' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:480px){.row2{grid-template-columns:1fr}}
-textarea.inp{resize:vertical;min-height:76px}
+
+/* INTEGRANTES */
+.integrante-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.integrante-row .inp{flex:1;margin:0}
+.btn-rem{width:36px;height:44px;flex-shrink:0;border:1.5px solid var(--bor);border-radius:10px;background:var(--sur2);color:var(--red2);font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.btn-rem:hover{background:#fde8e8;border-color:var(--red2)}
+.btn-add{width:100%;padding:11px;border:1.5px dashed var(--bm);border-radius:12px;background:transparent;color:var(--bm);font-weight:700;font-size:13px;margin-top:4px;transition:all .2s}
+.btn-add:hover{background:var(--sur2)}
+.integrantes-info{font-size:11px;color:var(--tf);margin-bottom:10px}
 
 /* COD PREVIEW */
 .cod-box{display:none;background:linear-gradient(135deg,var(--sur2),var(--bg));border:2px solid var(--bm);border-radius:14px;padding:14px 18px;margin-bottom:16px;text-align:center}
 .cod-label{font-size:11px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.cod-val{font-family:var(--ff1);font-size:26px;font-weight:900;color:var(--bd);letter-spacing:1.5px}
+.cod-val{font-family:var(--ff1);font-size:22px;font-weight:900;color:var(--bd);letter-spacing:1.5px}
 
-/* BOTÃO */
+/* TURMA INFO */
+.turma-info{display:none;background:var(--sur2);border:1px solid var(--bor);border-radius:12px;padding:12px 15px;margin-bottom:16px;font-size:13px;color:var(--ts)}
+.turma-info b{color:var(--txt)}
+.turma-info .turma-cod{font-family:var(--ff1);font-weight:900;color:var(--bd);font-size:15px}
+
 .btn{width:100%;padding:14px 18px;border:none;border-radius:14px;font-family:var(--ff1);font-weight:700;font-size:15px;letter-spacing:.3px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn:active{transform:scale(.97)}
 .btn-pri{background:linear-gradient(135deg,var(--bd),var(--bm));color:#fff;box-shadow:var(--sh2)}
@@ -71,33 +77,36 @@ textarea.inp{resize:vertical;min-height:76px}
 .suc-titulo{font-family:var(--ff1);font-size:20px;font-weight:900;color:var(--green2);margin-bottom:6px}
 .suc-cod-wrap{background:linear-gradient(135deg,var(--bd),var(--bm));border-radius:16px;padding:18px;margin:18px 0 10px;color:#fff}
 .suc-cod-lbl{font-size:11px;font-weight:700;letter-spacing:.5px;opacity:.7;margin-bottom:4px;text-transform:uppercase}
-.suc-cod{font-family:var(--ff1);font-size:34px;font-weight:900;letter-spacing:2px;color:var(--gold2)}
-.suc-info{font-size:13px;color:var(--ts);margin-top:10px;line-height:1.7}
+.suc-cod{font-family:var(--ff1);font-size:28px;font-weight:900;letter-spacing:2px;color:var(--gold2)}
+.suc-info{font-size:13px;color:var(--ts);margin-top:10px;line-height:1.7;text-align:left}
 .suc-info b{color:var(--txt)}
 .suc-copiar{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:8px 20px;border-radius:10px;font-weight:700;font-size:13px;margin-top:10px;cursor:pointer;font-family:var(--ff1)}
 .suc-copiar:hover{background:rgba(255,255,255,.25)}
+.integ-list{background:var(--sur2);border-radius:10px;padding:10px 14px;margin-top:10px;text-align:left;font-size:13px}
+.integ-list li{padding:3px 0;color:var(--ts);list-style:none;border-bottom:1px solid var(--bor)}
+.integ-list li:last-child{border:none}
+.integ-list li::before{content:'👤 ';font-size:11px}
 
-/* TOAST */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1A2A40;color:#fff;padding:11px 22px;border-radius:30px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* INFO BANNER */
 .info-banner{background:var(--sur2);border:1px solid var(--bor);border-radius:12px;padding:12px 15px;margin-bottom:20px;font-size:12px;color:var(--ts);display:flex;align-items:flex-start;gap:9px}
 .info-banner span{font-size:18px;flex-shrink:0;margin-top:-1px}
 
-/* LINK APP */
 .link-app{text-align:center;margin-top:20px}
 .link-app a{font-size:12px;color:var(--bm);font-weight:600;text-decoration:none;opacity:.75}
 .link-app a:hover{opacity:1;text-decoration:underline}
+
+.loading-turma{font-size:12px;color:var(--tf);margin-top:5px;display:none}
 </style>
 </head>
 <body>
 
 <div class="hdr">
-  <div class="hdr-icon">🎓</div>
+  <div class="hdr-icon">👥</div>
   <div class="hdr-text">
     <div class="hdr-name">Facunicamps</div>
-    <div class="hdr-sub">CADASTRO DE TURMA · MAPA DO BURNOUT</div>
+    <div class="hdr-sub">CADASTRO DE GRUPO · MAPA DO BURNOUT</div>
   </div>
 </div>
 
@@ -105,142 +114,80 @@ textarea.inp{resize:vertical;min-height:76px}
 
   <div class="info-banner">
     <span>ℹ️</span>
-    <div>Preencha os dados da sua turma. Um <strong>código único</strong> será gerado automaticamente — compartilhe com os alunos para que respondam o questionário.</div>
+    <div>Um integrante cadastra o grupo por todos. Informe o <strong>código da turma</strong> fornecido pela professora, o nome do grupo e os nomes de cada integrante.</div>
   </div>
 
   <!-- FORMULÁRIO -->
   <div id="area-form">
     <div class="card">
-      <div class="card-ttl">➕ Nova Turma</div>
+      <div class="card-ttl">👥 Dados do Grupo</div>
 
+      <!-- Código da turma -->
       <div class="fg">
-        <label class="lbl" for="ng-curso">Curso / Disciplina <span class="req">*</span></label>
-        <select class="sel" id="ng-curso" onchange="atualizarCodigo()">
-          <option value="">Selecione...</option>
-          <option>Enfermagem</option>
-          <option>Farmácia</option>
-          <option>Fisioterapia</option>
-          <option>Nutrição</option>
-          <option>Odontologia</option>
-          <option>Psicologia</option>
-          <option>Educação Física</option>
-          <option>Administração</option>
-          <option>Ciências Contábeis</option>
-          <option>Direito</option>
-          <option>Pedagogia</option>
-          <option>Serviço Social</option>
-          <option>Comunicação Social</option>
-          <option>Gestão de RH</option>
-          <option>Gestão Pública</option>
-          <option>Logística</option>
-          <option>Marketing</option>
-          <option>Gestão Comercial</option>
-          <option>Análise e Des. de Sistemas</option>
-          <option>Engenharia Civil</option>
-          <option>Engenharia Elétrica</option>
-          <option>Engenharia de Produção</option>
-          <option>Arquitetura e Urbanismo</option>
-          <option>Design Gráfico</option>
-          <option value="outro">Outro...</option>
-        </select>
+        <label class="lbl" for="cod-turma">Código da Turma <span class="req">*</span></label>
+        <input class="inp" id="cod-turma" type="text" placeholder="Ex: 26-2-PSI-MAT" style="text-transform:uppercase;letter-spacing:1px;font-family:var(--ff1);font-weight:700" oninput="this.value=this.value.toUpperCase();buscarTurma()" autocomplete="off">
+        <div class="loading-turma" id="loading-turma">🔍 Buscando turma...</div>
       </div>
 
-      <div class="fg" id="outro-curso-box" style="display:none">
-        <label class="lbl" for="ng-curso-outro">Nome do Curso <span class="req">*</span></label>
-        <input class="inp" id="ng-curso-outro" type="text" placeholder="Ex: Medicina Veterinária" oninput="atualizarCodigo()">
+      <!-- Info da turma encontrada -->
+      <div class="turma-info" id="turma-info">
+        <div>Turma: <span class="turma-cod" id="ti-cod"></span></div>
+        <div><b id="ti-curso"></b> — <span id="ti-turno"></span> · <span id="ti-sem"></span>º Semestre</div>
+        <div>Responsável: <span id="ti-prof"></span></div>
       </div>
 
-      <div class="row2">
-        <div class="fg">
-          <label class="lbl" for="ng-turno">Turno <span class="req">*</span></label>
-          <select class="sel" id="ng-turno" onchange="atualizarCodigo()">
-            <option value="">Selecione...</option>
-            <option value="MAT">Matutino</option>
-            <option value="VES">Vespertino</option>
-            <option value="NOT">Noturno</option>
-            <option value="EAD">EAD</option>
-            <option value="INT">Integral</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label class="lbl" for="ng-semestre">Semestre / Período <span class="req">*</span></label>
-          <select class="sel" id="ng-semestre">
-            <option value="">Selecione...</option>
-            <option value="1">1º Semestre</option>
-            <option value="2">2º Semestre</option>
-            <option value="3">3º Semestre</option>
-            <option value="4">4º Semestre</option>
-            <option value="5">5º Semestre</option>
-            <option value="6">6º Semestre</option>
-            <option value="7">7º Semestre</option>
-            <option value="8">8º Semestre</option>
-            <option value="9">9º Semestre</option>
-            <option value="10">10º Semestre</option>
-          </select>
-        </div>
-      </div>
-
+      <!-- Nome do grupo -->
       <div class="fg">
-        <label class="lbl" for="ng-publico">Público-alvo <span class="req">*</span></label>
-        <select class="sel" id="ng-publico">
-          <option value="">Selecione...</option>
-          <option>Universitários (geral)</option>
-          <option>Universitários — Homens</option>
-          <option>Universitários — Mulheres</option>
-          <option>Jovens pré-vestibular</option>
-          <option>Mulheres</option>
-          <option>Homens</option>
-          <option>Pós-graduandos</option>
-          <option>Extensionistas</option>
-        </select>
+        <label class="lbl" for="ng-nome">Nome do Grupo <span class="req">*</span></label>
+        <input class="inp" id="ng-nome" type="text" placeholder="Ex: Grupo Alpha, Equipe 3, Os Burnados..." oninput="atualizarCodigo()">
       </div>
 
-      <div class="fg">
-        <label class="lbl" for="ng-foco">Foco da Pesquisa <span class="req">*</span></label>
-        <input class="inp" id="ng-foco" type="text" placeholder="Ex: Burnout em estudantes de saúde no noturno">
-      </div>
-
-      <div class="fg">
-        <label class="lbl" for="ng-prof">Nome da Professora / Responsável <span class="req">*</span></label>
-        <input class="inp" id="ng-prof" type="text" placeholder="Ex: Profa. Dra. Lucia Kratz">
-      </div>
-
-      <div class="fg">
-        <label class="lbl" for="ng-obs">Observações (opcional)</label>
-        <input class="inp" id="ng-obs" type="text" placeholder="Ex: Turma A — 2º sem. 2024">
-      </div>
-
-      <!-- Preview do código -->
+      <!-- Preview do código do grupo -->
       <div class="cod-box" id="cod-preview">
-        <div class="cod-label">Código que será gerado</div>
+        <div class="cod-label">Código do grupo que será gerado</div>
         <div class="cod-val" id="cod-preview-val">—</div>
       </div>
 
+      <!-- Integrantes -->
+      <div class="fg">
+        <label class="lbl">Integrantes do Grupo <span class="req">*</span></label>
+        <div class="integrantes-info">Adicione todos os membros do grupo (mínimo 2)</div>
+        <div id="integrantes-lista">
+          <div class="integrante-row">
+            <input class="inp" type="text" placeholder="Nome completo do integrante 1">
+            <button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button>
+          </div>
+          <div class="integrante-row">
+            <input class="inp" type="text" placeholder="Nome completo do integrante 2">
+            <button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button>
+          </div>
+        </div>
+        <button class="btn-add" onclick="adicionarIntegrante()">+ Adicionar integrante</button>
+      </div>
+
       <button class="btn btn-pri" id="btn-salvar" onclick="salvarGrupo()">
-        💾 Cadastrar Turma e Gerar Código
+        💾 Cadastrar Grupo e Gerar Código
       </button>
     </div>
 
     <div class="link-app">
-      <a href="https://luciakratz-arch.github.io/Psi-Facunicamps/" target="_blank">← Acessar o Questionário</a>
-      &nbsp;·&nbsp;
-      <a href="painel.html">Painel da Professora</a>
+      <a href="https://luciakratz-arch.github.io/Psi-Facunicamps/" target="_blank">← Responder o Questionário</a>
     </div>
   </div>
 
   <!-- TELA DE SUCESSO -->
   <div id="area-sucesso" class="card sucesso">
     <div class="suc-icon">🎉</div>
-    <div class="suc-titulo">Turma cadastrada!</div>
+    <div class="suc-titulo">Grupo cadastrado!</div>
     <div class="suc-cod-wrap">
-      <div class="suc-cod-lbl">Código da turma</div>
+      <div class="suc-cod-lbl">Código do grupo</div>
       <div class="suc-cod" id="suc-cod-val">—</div>
       <button class="suc-copiar" onclick="copiarCodigo()">📋 Copiar código</button>
     </div>
     <div class="suc-info" id="suc-detalhes"></div>
-    <button class="btn btn-pri" style="margin-top:18px" onclick="cadastrarOutra()">➕ Cadastrar outra turma</button>
+    <button class="btn btn-pri" style="margin-top:18px" onclick="irQuestionario()">📝 Responder o Questionário agora</button>
     <button class="btn btn-sec" onclick="compartilharWhats()">💬 Enviar código pelo WhatsApp</button>
-    <a href="https://luciakratz-arch.github.io/Psi-Facunicamps/" target="_blank" style="display:block;margin-top:12px;font-size:12px;color:var(--bm);font-weight:600;text-align:center;text-decoration:none">Abrir questionário →</a>
+    <button class="btn btn-sec" style="margin-top:6px" onclick="cadastrarOutro()">➕ Cadastrar outro grupo</button>
   </div>
 
 </div>
@@ -250,31 +197,12 @@ textarea.inp{resize:vertical;min-height:76px}
 <script>
 const DB='https://anamnese-dralucia-default-rtdb.firebaseio.com';
 const COL_GRUPOS='facunicamps-grupos';
+const COL_TURMAS='facunicamps-turmas';
 
-const PREFIXOS={
-  'Enfermagem':'ENF','Farmácia':'FAR','Fisioterapia':'FIS','Nutrição':'NUT',
-  'Odontologia':'ODO','Psicologia':'PSI','Educação Física':'EDF',
-  'Administração':'ADM','Ciências Contábeis':'CON','Direito':'DIR',
-  'Pedagogia':'PED','Serviço Social':'SSO','Comunicação Social':'COM',
-  'Gestão de RH':'GRH','Gestão Pública':'GPU','Logística':'LOG',
-  'Marketing':'MKT','Gestão Comercial':'GCO',
-  'Análise e Des. de Sistemas':'ADS','Engenharia Civil':'ECI',
-  'Engenharia Elétrica':'EEL','Engenharia de Produção':'EPR',
-  'Arquitetura e Urbanismo':'ARQ','Design Gráfico':'DES'
-};
-
+let turmaAtual=null;
 let gruposExistentes=[];
 let codigoGerado='';
-
-// Carregar grupos existentes para contagem correta de sequência
-async function carregarGruposExistentes(){
-  try{
-    const r=await fetch(DB+'/'+COL_GRUPOS+'.json');
-    const d=await r.json();
-    gruposExistentes=d?Object.values(d):[];
-  }catch(e){gruposExistentes=[];}
-}
-carregarGruposExistentes();
+let buscaTimer=null;
 
 function toast(msg,dur=2800){
   const el=document.getElementById('toast');
@@ -282,50 +210,104 @@ function toast(msg,dur=2800){
   setTimeout(()=>el.classList.remove('show'),dur);
 }
 
+// Busca turma pelo código digitado
+async function buscarTurma(){
+  const cod=document.getElementById('cod-turma').value.trim();
+  const info=document.getElementById('turma-info');
+  const load=document.getElementById('loading-turma');
+  info.style.display='none';
+  turmaAtual=null;
+  codigoGerado='';
+  document.getElementById('cod-preview').style.display='none';
+  clearTimeout(buscaTimer);
+  if(cod.length<4)return;
+  buscaTimer=setTimeout(async()=>{
+    load.style.display='block';
+    try{
+      const r=await fetch(DB+'/'+COL_TURMAS+'.json?orderBy=%22codigo%22&equalTo=%22'+encodeURIComponent(cod)+'%22');
+      const d=await r.json();
+      load.style.display='none';
+      if(d&&Object.keys(d).length>0){
+        const key=Object.keys(d)[0];
+        turmaAtual={...d[key],_key:key};
+        document.getElementById('ti-cod').textContent=turmaAtual.codigo;
+        document.getElementById('ti-curso').textContent=turmaAtual.curso||'';
+        document.getElementById('ti-turno').textContent=turmaAtual.turnoNome||turmaAtual.turno||'';
+        document.getElementById('ti-sem').textContent=turmaAtual.semestre||'';
+        document.getElementById('ti-prof').textContent=turmaAtual.prof||'';
+        info.style.display='block';
+        await carregarGruposExistentes();
+        atualizarCodigo();
+      }else{
+        toast('⚠️ Turma não encontrada. Verifique o código com a professora.');
+      }
+    }catch(e){load.style.display='none';toast('❌ Erro ao buscar turma.');}
+  },600);
+}
+
+async function carregarGruposExistentes(){
+  try{
+    const r=await fetch(DB+'/'+COL_GRUPOS+'.json');
+    const d=await r.json();
+    gruposExistentes=d?Object.values(d):[];
+  }catch(e){gruposExistentes=[];}
+}
+
 function atualizarCodigo(){
-  const cursoEl=document.getElementById('ng-curso');
-  const turno=document.getElementById('ng-turno').value;
-  document.getElementById('outro-curso-box').style.display=(cursoEl.value==='outro')?'block':'none';
-  if(!cursoEl.value||!turno){document.getElementById('cod-preview').style.display='none';return;}
-  const cursoVal=cursoEl.value==='outro'?document.getElementById('ng-curso-outro').value:cursoEl.value;
-  if(!cursoVal){document.getElementById('cod-preview').style.display='none';return;}
-  const pref=PREFIXOS[cursoVal]||(cursoVal.substring(0,3).toUpperCase());
-  const iguais=gruposExistentes.filter(g=>g.codigo&&g.codigo.startsWith(pref+'-'+turno+'-')).length;
+  if(!turmaAtual)return;
+  const nome=document.getElementById('ng-nome').value.trim();
+  if(!nome){document.getElementById('cod-preview').style.display='none';return;}
+  const base=turmaAtual.codigo;
+  const iguais=gruposExistentes.filter(g=>g.codigoGrupo&&g.codigoGrupo.startsWith(base+'-G')).length;
   const num=String(iguais+1).padStart(3,'0');
-  codigoGerado=pref+'-'+turno+'-'+num;
+  codigoGerado=base+'-G'+num;
   document.getElementById('cod-preview-val').textContent=codigoGerado;
   document.getElementById('cod-preview').style.display='block';
 }
 
+function adicionarIntegrante(){
+  const lista=document.getElementById('integrantes-lista');
+  const n=lista.children.length+1;
+  const div=document.createElement('div');
+  div.className='integrante-row';
+  div.innerHTML=`<input class="inp" type="text" placeholder="Nome completo do integrante ${n}"><button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button>`;
+  lista.appendChild(div);
+  div.querySelector('input').focus();
+}
+
+function removerIntegrante(btn){
+  const lista=document.getElementById('integrantes-lista');
+  if(lista.children.length<=2){toast('⚠️ O grupo precisa ter pelo menos 2 integrantes.');return;}
+  btn.parentElement.remove();
+}
+
+function getIntegrantes(){
+  return Array.from(document.querySelectorAll('#integrantes-lista .integrante-row input'))
+    .map(i=>i.value.trim()).filter(v=>v.length>0);
+}
+
 async function salvarGrupo(){
-  const cursoEl=document.getElementById('ng-curso');
-  const curso=cursoEl.value==='outro'?document.getElementById('ng-curso-outro').value:cursoEl.value;
-  const turno=document.getElementById('ng-turno').value;
-  const semestre=document.getElementById('ng-semestre').value;
-  const foco=document.getElementById('ng-foco').value.trim();
-  const publico=document.getElementById('ng-publico').value;
-  const prof=document.getElementById('ng-prof').value.trim();
-  if(!curso||!turno||!semestre||!foco||!publico||!prof){
-    toast('⚠️ Preencha todos os campos obrigatórios.');return;
-  }
+  if(!turmaAtual){toast('⚠️ Informe o código da turma primeiro.');return;}
+  const nome=document.getElementById('ng-nome').value.trim();
+  const integrantes=getIntegrantes();
+  if(!nome){toast('⚠️ Informe o nome do grupo.');return;}
+  if(integrantes.length<2){toast('⚠️ Adicione pelo menos 2 integrantes.');return;}
   const btn=document.getElementById('btn-salvar');
   btn.disabled=true;btn.textContent='⏳ Salvando...';
-  // Recarregar contagem antes de salvar para evitar duplicatas
+  // Recarregar antes de salvar para evitar duplicata de sequência
   await carregarGruposExistentes();
   atualizarCodigo();
-  if(!codigoGerado){btn.disabled=false;btn.innerHTML='💾 Cadastrar Turma e Gerar Código';return;}
-  const obs=document.getElementById('ng-obs').value.trim();
-  const turnoNomes={MAT:'Matutino',VES:'Vespertino',NOT:'Noturno',EAD:'EAD',INT:'Integral'};
+  if(!codigoGerado){btn.disabled=false;btn.innerHTML='💾 Cadastrar Grupo e Gerar Código';return;}
   const data={
-    codigo:codigoGerado,
-    curso,
-    turno,
-    turnoNome:turnoNomes[turno]||turno,
-    semestre,
-    foco,
-    publico,
-    prof,
-    obs,
+    codigoGrupo:codigoGerado,
+    codigoTurma:turmaAtual.codigo,
+    nomeGrupo:nome,
+    integrantes,
+    curso:turmaAtual.curso||'',
+    turno:turmaAtual.turno||'',
+    turnoNome:turmaAtual.turnoNome||turmaAtual.turno||'',
+    semestre:turmaAtual.semestre||'',
+    prof:turmaAtual.prof||'',
     criado:new Date().toISOString(),
     ts:Date.now()
   };
@@ -334,7 +316,7 @@ async function salvarGrupo(){
     mostrarSucesso(data);
   }catch(e){
     toast('❌ Erro ao salvar. Tente novamente.');
-    btn.disabled=false;btn.innerHTML='💾 Cadastrar Turma e Gerar Código';
+    btn.disabled=false;btn.innerHTML='💾 Cadastrar Grupo e Gerar Código';
   }
 }
 
@@ -342,14 +324,15 @@ function mostrarSucesso(data){
   document.getElementById('area-form').style.display='none';
   const suc=document.getElementById('area-sucesso');
   suc.style.display='block';
-  document.getElementById('suc-cod-val').textContent=data.codigo;
+  document.getElementById('suc-cod-val').textContent=data.codigoGrupo;
+  const listHtml=data.integrantes.map(n=>`<li>${n}</li>`).join('');
   document.getElementById('suc-detalhes').innerHTML=
-    `<b>Curso:</b> ${data.curso}<br>`+
-    `<b>Turno:</b> ${data.turnoNome} &nbsp;·&nbsp; <b>${data.semestre}º Semestre</b><br>`+
-    `<b>Público:</b> ${data.publico}<br>`+
-    `<b>Foco:</b> ${data.foco}<br>`+
-    `<b>Responsável:</b> ${data.prof}<br><br>`+
-    `<span style="font-size:11px;color:var(--tf)">Compartilhe o código acima com os alunos para que preencham o questionário.</span>`;
+    `<b>Turma:</b> ${data.codigoTurma}<br>`+
+    `<b>Curso:</b> ${data.curso} — ${data.turnoNome} · ${data.semestre}º Semestre<br>`+
+    `<b>Grupo:</b> ${data.nomeGrupo}<br>`+
+    `<b>Responsável:</b> ${data.prof}<br>`+
+    `<div class="integ-list"><ul>${listHtml}</ul></div>`+
+    `<br><span style="font-size:11px;color:var(--tf)">Use este código ao responder o questionário para que seus resultados sejam agrupados corretamente.</span>`;
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -359,23 +342,33 @@ function copiarCodigo(){
   catch(e){toast('Código: '+cod);}
 }
 
+function irQuestionario(){
+  const cod=document.getElementById('suc-cod-val').textContent;
+  window.location.href='https://luciakratz-arch.github.io/Psi-Facunicamps/?grupo='+encodeURIComponent(cod);
+}
+
 function compartilharWhats(){
   const cod=document.getElementById('suc-cod-val').textContent;
   const link='https://luciakratz-arch.github.io/Psi-Facunicamps/';
-  const msg=encodeURIComponent(`Olá! 🎓\n\nVocê foi convidado(a) para participar do *Mapa do Burnout Universitário* — Facunicamps.\n\n1. Acesse o link: ${link}\n2. Na tela inicial, insira o código da turma: *${cod}*\n3. Responda com sinceridade. Seus dados são confidenciais.\n\nQualquer dúvida, fale comigo! 💙`);
+  const msg=encodeURIComponent(`Olá! 👥\n\nNosso grupo já está cadastrado no *Mapa do Burnout Universitário* — Facunicamps.\n\nUse o código abaixo ao responder o questionário:\n*${cod}*\n\nAcesse: ${link}\n\n⚠️ Todos do grupo precisam responder individualmente usando este código!`);
   window.open('https://wa.me/?text='+msg,'_blank');
 }
 
-function cadastrarOutra(){
+function cadastrarOutro(){
   document.getElementById('area-sucesso').style.display='none';
   document.getElementById('area-form').style.display='block';
-  ['ng-curso','ng-turno','ng-semestre','ng-publico'].forEach(id=>document.getElementById(id).value='');
-  ['ng-foco','ng-obs','ng-prof','ng-curso-outro'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cod-turma').value='';
+  document.getElementById('ng-nome').value='';
+  document.getElementById('turma-info').style.display='none';
   document.getElementById('cod-preview').style.display='none';
-  document.getElementById('outro-curso-box').style.display='none';
+  turmaAtual=null;codigoGerado='';
+  // Resetar integrantes para 2 campos
+  const lista=document.getElementById('integrantes-lista');
+  lista.innerHTML=
+    `<div class="integrante-row"><input class="inp" type="text" placeholder="Nome completo do integrante 1"><button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button></div>`+
+    `<div class="integrante-row"><input class="inp" type="text" placeholder="Nome completo do integrante 2"><button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button></div>`;
   const btn=document.getElementById('btn-salvar');
-  btn.disabled=false;btn.innerHTML='💾 Cadastrar Turma e Gerar Código';
-  carregarGruposExistentes();
+  btn.disabled=false;btn.innerHTML='💾 Cadastrar Grupo e Gerar Código';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 </script>
