@@ -112,6 +112,14 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     </div>
   </div>
 
+  <!-- TURMAS CADASTRADAS -->
+  <div id="area-turmas" style="display:none;margin-bottom:16px">
+    <div class="card" style="padding:16px">
+      <div class="card-ttl" style="margin-bottom:12px">📋 Turmas Cadastradas</div>
+      <div id="lista-turmas"><div style="color:var(--tf);font-size:13px">Carregando...</div></div>
+    </div>
+  </div>
+
   <!-- FORMULÁRIO -->
   <div id="area-form" style="display:none">
     <div class="card">
@@ -279,6 +287,7 @@ function entrar(){
   const s=document.getElementById('senha-inp').value;
   if(s===SENHA){
     document.getElementById('area-login').style.display='none';
+    document.getElementById('area-turmas').style.display='block';
     document.getElementById('area-form').style.display='block';
     carregarTurmas();
   }else{
@@ -293,7 +302,38 @@ async function carregarTurmas(){
     const r=await fetch(DB+'/'+COL_TURMAS+'.json');
     const d=await r.json();
     turmasExistentes=d?Object.values(d):[];
-  }catch(e){turmasExistentes=[];}
+    renderizarTurmas(d);
+  }catch(e){turmasExistentes=[];renderizarTurmas(null);}
+}
+
+function renderizarTurmas(d){
+  const el=document.getElementById('lista-turmas');
+  if(!d||Object.keys(d).length===0){
+    el.innerHTML='<div style="color:var(--tf);font-size:13px;text-align:center;padding:8px 0">Nenhuma turma cadastrada ainda.</div>';
+    return;
+  }
+  const turmas=Object.entries(d).sort((a,b)=>b[1].ts-a[1].ts);
+  el.innerHTML=turmas.map(([key,t])=>{
+    const link='https://luciakratz-arch.github.io/Psi-Facunicamps/cadastro.html?turma='+encodeURIComponent(t.codigo);
+    return `<div style="border:1px solid var(--bor);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:var(--sur2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-family:var(--ff1);font-weight:800;font-size:15px;color:var(--bd);letter-spacing:1px">${t.codigo}</div>
+          <div style="font-size:12px;color:var(--ts);margin-top:2px">${t.curso||''} · ${t.turnoNome||t.turno||''} · ${t.semestre||''}º sem · ${t.prof||''}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button onclick="navigator.clipboard.writeText('${link}');toast('✅ Link copiado!')" style="background:var(--bd);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">📋 Copiar link</button>
+          <button onclick="compartilharTurmaWhats('${t.codigo}')" style="background:#25D366;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">💬 WhatsApp</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function compartilharTurmaWhats(cod){
+  const link='https://luciakratz-arch.github.io/Psi-Facunicamps/cadastro.html?turma='+encodeURIComponent(cod);
+  const msg=encodeURIComponent(`Olá! 🎓\n\nPara participar da pesquisa *Mapa do Burnout Universitário*, um integrante do grupo deve acessar o link abaixo e cadastrar o grupo da equipe.\n\n📋 Link de cadastro (já com o código da turma):\n${link}\n\nApós cadastrar o grupo, todos os integrantes respondem o questionário individualmente usando o código do grupo gerado.`);
+  window.open('https://wa.me/?text='+msg,'_blank');
 }
 
 function toast(msg,dur=2800){
