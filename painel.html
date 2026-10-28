@@ -435,40 +435,52 @@ function renderListaGrupos(){
     el.innerHTML='<div class="empty">📋 Nenhum grupo cadastrado ainda.<br><br><button class="btn btn-pri" onclick="aba(\'novo\')">➕ Criar primeiro grupo</button></div>';
     return;
   }
-  // Ordenar por data de criação (mais recente primeiro)
-  const ordenados=[...todosGrupos].sort((a,b)=>b.ts-a.ts);
+  // Agrupar por turma
+  const porTurma={};
+  todosGrupos.forEach(g=>{
+    const chave=g.codigoTurma||'—';
+    if(!porTurma[chave])porTurma[chave]={label:chave,grupos:[]};
+    porTurma[chave].grupos.push(g);
+  });
+  // Ordenar turmas
+  const turmasOrdenadas=Object.keys(porTurma).sort();
   let html='';
-  ordenados.forEach(g=>{
-    const resps=todasRespostas.filter(r=>r.codigo===g.codigo);
-    const n=resps.length;
-    const dist={ok:0,mod:0,hi:0};
-    resps.forEach(r=>{const fa=r.faseAtiva||0;const mg=r.mediaGeral||0;if(fa<=4&&mg<45)dist.ok++;else if(fa<=7)dist.mod++;else dist.hi++;});
-    const dataCriacao=g.criado?new Date(g.criado).toLocaleDateString('pt-BR'):'—';
-    html+=`<div class="grupo-card">
-      <div class="grupo-card-hdr">
-        <div class="grupo-info">
-          <div class="grupo-nome">${g.curso} — ${g.turnoNome} · ${g.semestre}º Sem.</div>
-          <div class="grupo-meta">
-            <span class="cod-badge">${g.codigo}</span>
-            &nbsp;·&nbsp;${g.publico}&nbsp;·&nbsp;Criado em ${dataCriacao}
-          </div>
-          ${g.obs?`<div style="font-size:12px;color:var(--tf);margin-top:3px">📝 ${g.obs}</div>`:''}
-          ${g.foco?`<div style="font-size:12px;color:var(--ts);margin-top:3px;font-style:italic">🎯 ${g.foco}</div>`:''}
-        </div>
-      </div>
-      <div class="grupo-stats">
-        <div class="grupo-stat"><div class="grupo-stat-num">${n}</div><div class="grupo-stat-lbl">Respostas</div></div>
-        <div class="grupo-stat"><div class="grupo-stat-num green">${dist.ok}</div><div class="grupo-stat-lbl">Baixo risco</div></div>
-        <div class="grupo-stat"><div class="grupo-stat-num" style="color:#E67E22">${dist.mod}</div><div class="grupo-stat-lbl">Moderado</div></div>
-        <div class="grupo-stat"><div class="grupo-stat-num red">${dist.hi}</div><div class="grupo-stat-lbl">Alto risco</div></div>
-      </div>
-      <div class="grupo-acoes">
-        <button class="btn btn-sm btn-pri" onclick="verRelatorio('${g.codigo}')">📊 Ver Relatório</button>
-        <button class="btn btn-sm btn-green" onclick="copiarCodigo('${g.codigo}')">📋 Copiar Código</button>
-        <button class="btn btn-sm btn-wa" onclick="compartilharWhats('${g.codigo}')">💬 Compartilhar</button>
-        <button class="btn btn-sm btn-del" onclick="deletarGrupo('${g._id}','${g.codigo}')">🗑️</button>
-      </div>
+  turmasOrdenadas.forEach(chave=>{
+    const turmaGrupos=porTurma[chave].grupos.sort((a,b)=>b.ts-a.ts);
+    html+=`<div style="margin-bottom:6px;padding:8px 12px;background:var(--bd);border-radius:10px;display:flex;align-items:center;gap:8px">
+      <span style="font-family:var(--ff1);font-weight:800;font-size:13px;color:#fff;letter-spacing:1px">🎓 ${chave}</span>
+      <span style="font-size:11px;color:rgba(255,255,255,.6)">${turmaGrupos.length} grupo${turmaGrupos.length!==1?'s':''}</span>
     </div>`;
+    turmaGrupos.forEach(g=>{
+      const resps=todasRespostas.filter(r=>r.codigo===g.codigo);
+      const n=resps.length;
+      const dist={ok:0,mod:0,hi:0};
+      resps.forEach(r=>{const fa=r.faseAtiva||0;const mg=r.mediaGeral||0;if(fa<=4&&mg<45)dist.ok++;else if(fa<=7)dist.mod++;else dist.hi++;});
+      const dataCriacao=g.criado?new Date(g.criado).toLocaleDateString('pt-BR'):'—';
+      html+=`<div class="grupo-card" style="margin-left:12px;margin-bottom:10px">
+        <div class="grupo-card-hdr">
+          <div class="grupo-info">
+            <div class="grupo-nome">${g.nomeGrupo||g.codigo}</div>
+            <div class="grupo-meta">
+              <span class="cod-badge">${g.codigo}</span>
+              &nbsp;·&nbsp;${g.publicoAlvo||g.publico||'—'}&nbsp;·&nbsp;Criado em ${dataCriacao}
+            </div>
+          </div>
+        </div>
+        <div class="grupo-stats">
+          <div class="grupo-stat"><div class="grupo-stat-num">${n}</div><div class="grupo-stat-lbl">Respostas</div></div>
+          <div class="grupo-stat"><div class="grupo-stat-num green">${dist.ok}</div><div class="grupo-stat-lbl">Baixo risco</div></div>
+          <div class="grupo-stat"><div class="grupo-stat-num" style="color:#E67E22">${dist.mod}</div><div class="grupo-stat-lbl">Moderado</div></div>
+          <div class="grupo-stat"><div class="grupo-stat-num red">${dist.hi}</div><div class="grupo-stat-lbl">Alto risco</div></div>
+        </div>
+        <div class="grupo-acoes">
+          <button class="btn btn-sm btn-pri" onclick="verRelatorio('${g.codigo}')">📊 Ver Relatório</button>
+          <button class="btn btn-sm btn-green" onclick="copiarCodigo('${g.codigo}')">📋 Copiar Código</button>
+          <button class="btn btn-sm btn-wa" onclick="compartilharWhats('${g.codigo}')">💬 Compartilhar</button>
+          <button class="btn btn-sm btn-del" onclick="deletarGrupo('${g._id}','${g.codigo}')">🗑️</button>
+        </div>
+      </div>`;
+    });
   });
   el.innerHTML=html;
 }
