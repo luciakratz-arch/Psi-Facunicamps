@@ -259,6 +259,21 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
       </div>
 
       <div class="fg">
+        <label class="lbl">Nome do líder do grupo</label>
+        <input class="inp" id="ng-lider" type="text" placeholder="Quem representa o grupo">
+      </div>
+
+      <div class="fg">
+        <label class="lbl">WhatsApp do líder do grupo *</label>
+        <input class="inp" id="ng-zap" type="tel" inputmode="tel" placeholder="Ex: (62) 99999-9999">
+      </div>
+
+      <div class="fg">
+        <label class="lbl">Integrantes do grupo (um nome por linha)</label>
+        <textarea class="inp" id="ng-integrantes" rows="4" placeholder="Ex:&#10;Maria Souza&#10;João Lima"></textarea>
+      </div>
+
+      <div class="fg">
         <label class="lbl">Público-alvo *</label>
         <select class="sel" id="ng-publico">
           <option value="">Selecione...</option>
@@ -416,7 +431,11 @@ async function salvarGrupo(){
   const semestre=document.getElementById('ng-semestre').value;
   const foco=document.getElementById('ng-foco').value.trim();
   const publico=document.getElementById('ng-publico').value;
+  const zapLider=document.getElementById('ng-zap').value.replace(/\D/g,'');
+  const nomeLider=document.getElementById('ng-lider').value.trim();
+  const integrantes=document.getElementById('ng-integrantes').value.split(/\n/).map(x=>x.trim()).filter(Boolean);
   if(!curso||!turno||!semestre||!foco||!publico){toast('⚠️ Preencha todos os campos obrigatórios.');return;}
+  if(zapLider.length<10||zapLider.length>13){toast('⚠️ Informe o WhatsApp do líder com DDD.');return;}
   const cod=gerarCodigo();
   if(!cod){toast('⚠️ Erro ao gerar código.');return;}
   const obs=document.getElementById('ng-obs').value.trim();
@@ -426,7 +445,9 @@ async function salvarGrupo(){
     codigoGrupo:cod,
     codigoTurma:cod,
     nomeGrupo:curso+' — '+turno,
-    zapLider:'',
+    zapLider:zapLider,
+    nomeLider:nomeLider,
+    integrantes:integrantes,
     curso,
     turno,
     turnoNome:turnoNomes[turno]||turno,
@@ -443,7 +464,7 @@ async function salvarGrupo(){
     toast('✅ Grupo '+cod+' cadastrado!');
     // Limpar form
     ['ng-curso','ng-turno','ng-semestre','ng-publico'].forEach(id=>document.getElementById(id).value='');
-    ['ng-foco','ng-obs','ng-curso-outro'].forEach(id=>document.getElementById(id).value='');
+    ['ng-foco','ng-obs','ng-curso-outro','ng-lider','ng-zap','ng-integrantes'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('cod-preview').style.display='none';
     document.getElementById('outro-curso-box').style.display='none';
     await carregarTudo();
@@ -493,6 +514,10 @@ function renderListaGrupos(){
             <div class="grupo-meta">
               <span class="cod-badge">${escaparHtml(codigo)}</span>
               &nbsp;·&nbsp;${escaparHtml(g.publicoAlvo||g.publico||'—')}&nbsp;·&nbsp;Criado em ${escaparHtml(dataCriacao)}
+            </div>
+            <div class="grupo-meta" style="margin-top:6px">
+              <strong>Líder:</strong> ${escaparHtml(g.nomeLider||'—')}${g.zapLider?' · '+escaparHtml(g.zapLider):' · <span style="color:#C0392B">sem WhatsApp</span>'}<br>
+              <strong>Integrantes${Array.isArray(g.integrantes)?' ('+g.integrantes.length+')':''}:</strong> ${Array.isArray(g.integrantes)&&g.integrantes.length?g.integrantes.map(escaparHtml).join(', '):'<span style="color:#9CA3AF">não informados</span>'}
             </div>
           </div>
         </div>
@@ -843,7 +868,9 @@ function compartilharWhats(cod){
   link.searchParams.set('grupo',cod);
   link.searchParams.set('turma',grupo?.codigoTurma||'');
   const msg=encodeURIComponent('🎓 *Mapa do Burnout — Facunicamps*\n\nAcesse o questionário da pesquisa pelo link abaixo. O código da turma e do grupo já estão preenchidos:\n\n'+link.href+'\n\nA participação é voluntária. Obrigada!');
-  window.open('https://wa.me/?text='+msg,'_blank');
+  const zapL=String(grupo?.zapLider||'').replace(/\D/g,'');
+  const numL=zapL?(zapL.startsWith('55')?zapL:'55'+zapL):'';
+  window.open('https://wa.me/'+numL+'?text='+msg,'_blank');
 }
 async function deletarGrupo(id,cod){
   if(!confirm('Excluir o grupo '+cod+'? As respostas dos alunos não serão apagadas.'))return;
