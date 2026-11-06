@@ -316,6 +316,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 const COL_GRUPOS='facunicamps-grupos';
 const COL_RESP='facunicamps-burnout';
 const COL_PUBLIC='facunicamps-relatorios-publicos';
+const COL_TURMAS='facunicamps-turmas';
 
 // PREFIXOS DOS CURSOS
 const PREFIXOS={
@@ -332,6 +333,7 @@ const PREFIXOS={
 
 let grupoAtual=null;
 let todosGrupos=[];
+let todasTurmas=[];   // turmas cadastradas (inclusive as que ainda não têm grupo)
 let todasRespostas=[];
 
 // ---- LOGIN ----
@@ -373,12 +375,15 @@ function aba(nome){
 // ---- CARREGAR TUDO ----
 async function carregarTudo(){
   try{
-    const [rG,rR]=await Promise.all([
+    const [rG,rR,rT]=await Promise.all([
       fcFetch(COL_GRUPOS+'.json'),
-      fcFetch(COL_RESP+'.json')
+      fcFetch(COL_RESP+'.json'),
+      fcFetch(COL_TURMAS+'.json')
     ]);
     const dataG=await rG.json();
     const dataR=await rR.json();
+    const dataT=await rT.json();
+    todasTurmas=dataT?Object.entries(dataT).map(([k,v])=>({...v,codigo:v.codigo||k})):[];
     todosGrupos=dataG?Object.entries(dataG).map(([k,v])=>({...v,codigo:v.codigo||v.codigoGrupo,codigoGrupo:v.codigoGrupo||v.codigo,_id:k})):[];
     todasRespostas=dataR?Object.values(dataR):[];
     renderListaGrupos();
@@ -450,12 +455,13 @@ async function salvarGrupo(){
 function renderListaGrupos(){
   const el=document.getElementById('lista-grupos');
   const escaparHtml=valor=>String(valor||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-  if(todosGrupos.length===0){
+  if(todosGrupos.length===0&&todasTurmas.length===0){
     el.innerHTML='<div class="empty">📋 Nenhum grupo cadastrado ainda.<br><br><button class="btn btn-pri" onclick="aba(\'novo\')">➕ Criar primeiro grupo</button></div>';
     return;
   }
-  // Agrupar por turma
+  // Agrupar por turma (as turmas cadastradas aparecem mesmo sem grupo)
   const porTurma={};
+  todasTurmas.forEach(t=>{porTurma[t.codigo]={label:t.codigo,turma:t,grupos:[]};});
   todosGrupos.forEach(g=>{
     const chave=g.codigoTurma||'—';
     if(!porTurma[chave])porTurma[chave]={label:chave,grupos:[]};
@@ -468,8 +474,11 @@ function renderListaGrupos(){
     const turmaGrupos=porTurma[chave].grupos.sort((a,b)=>b.ts-a.ts);
     html+=`<div style="margin-bottom:6px;padding:8px 12px;background:var(--bd);border-radius:10px;display:flex;align-items:center;gap:8px">
       <span style="font-family:var(--ff1);font-weight:800;font-size:13px;color:#fff;letter-spacing:1px">🎓 ${escaparHtml(chave)}</span>
-      <span style="font-size:11px;color:rgba(255,255,255,.6)">${turmaGrupos.length} grupo${turmaGrupos.length!==1?'s':''}</span>
+      <span style="font-size:11px;color:rgba(255,255,255,.6)">${turmaGrupos.length} grupo${turmaGrupos.length!==1?'s':''}${porTurma[chave].turma?' · '+escaparHtml(porTurma[chave].turma.turnoNome||'')+(porTurma[chave].turma.semestre?' · '+escaparHtml(porTurma[chave].turma.semestre)+'º semestre':''):''}</span>
     </div>`;
+    if(turmaGrupos.length===0){
+      html+=`<div style="margin:0 12px 10px;padding:12px 14px;background:#fff;border:1px dashed #C9D6EE;border-radius:10px;font-size:13px;color:#5B6B8C">Nenhum grupo nesta turma ainda. <button class="btn btn-sm btn-pri" style="margin-left:8px" onclick="aba('novo')">➕ Criar grupo</button></div>`;
+    }
     turmaGrupos.forEach(g=>{
       const codigo=g.codigoGrupo||g.codigo;
       const resps=todasRespostas.filter(r=>r.codigo===codigo);
@@ -839,7 +848,9 @@ function compartilharWhats(cod){
 async function deletarGrupo(id,cod){
   if(!confirm('Excluir o grupo '+cod+'? As respostas dos alunos não serão apagadas.'))return;
   try{
-    await fcFetch(COL_GRUPOS+'/'+id+'.json',{method:'DELETE'});
+    const resp=await fcFetch(COL_GRUPOS+'/'+encodeURIComponent(id)+'.json',{method:'DELETE'});
+    // fetch não dá erro em resposta recusada (401/403): confere de verdade antes de dizer que removeu
+    if(!resp.ok){toast('❌ Não foi possível remover (erro '+resp.status+'). Entre de novo com a conta Google da pesquisadora.');return;}
     toast('🗑️ Grupo '+cod+' removido.');
     await carregarTudo();
   }catch(e){toast('❌ Erro ao remover.');}
