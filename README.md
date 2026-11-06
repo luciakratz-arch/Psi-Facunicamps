@@ -2,7 +2,7 @@
 
 ## Configuração obrigatória antes de publicar
 
-1. No Firebase Console, habilite **Authentication → Google** e **Authentication → Anônimo**. Cadastre `contato@aequipe.com.br` como a conta administrativa e autorize o domínio GitHub Pages em **Authentication → Settings → Authorized domains**.
+1. No Firebase Console, habilite **Authentication → Google** e **Authentication → Anônimo**. Use `contato@luciakratz.com.br` como a conta administrativa e autorize o domínio GitHub Pages em **Authentication → Settings → Authorized domains**.
 2. Em **Configurações do projeto → Seus apps → Web**, copie `apiKey` e `appId` para `firebase-config.js`. Esses valores de configuração Web são públicos; nunca coloque senhas, chaves de conta de serviço ou credenciais privadas nesse arquivo.
 3. Faça backup dos dados atuais do Realtime Database antes de publicar as regras. Em **Realtime Database → Rules**, publique o conteúdo de `database.rules.json`. As regras restringem respostas e grupos à conta Google administrativa; participantes podem enviar novas respostas e grupos, sem ler dados existentes. Turmas e relatórios agregados têm leitura pública.
 4. Teste cadastro, preenchimento do questionário, login Google e acesso negado a dados privados em uma janela anônima. Não colete dados reais enquanto as regras não estiverem publicadas e verificadas.

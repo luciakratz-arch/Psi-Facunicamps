@@ -1,5 +1,5 @@
 (function () {
-  const ADMIN_EMAIL = 'contato@aequipe.com.br';
+  const ADMIN_EMAIL = 'contato@luciakratz.com.br';
   const config = window.FIREBASE_CONFIG;
   const configured = config &&
     config.apiKey !== 'PREENCHER_NO_FIREBASE_CONSOLE' &&
