@@ -7,6 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-client.js"></script>
 <style>
 :root{
   --bd:#0D2B6B;--bm:#1A52B8;--bl:#3A7FD4;
@@ -30,6 +35,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 
 .hdr{background:linear-gradient(135deg,var(--bd),var(--bm));padding:11px 16px 13px;display:flex;align-items:center;gap:12px;border-bottom:4px solid var(--gold);position:sticky;top:env(safe-area-inset-top,0);z-index:200;box-shadow:var(--sh2)}
 .hdr-icon{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.hdr-icon img{width:36px;height:36px;object-fit:contain}
 .hdr-text{display:flex;flex-direction:column}
 .hdr-name{font-family:var(--ff1);font-weight:900;font-size:16px;color:#fff;letter-spacing:.3px;line-height:1.1}
 .hdr-sub{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.4px;font-weight:600}
@@ -103,7 +109,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 <body>
 
 <div class="hdr">
-  <div class="hdr-icon">👥</div>
+  <div class="hdr-icon"><img src="facunicamps-logo.png" alt="Facunicamps"></div>
   <div class="hdr-text">
     <div class="hdr-name">Facunicamps</div>
     <div class="hdr-sub">CADASTRO DE GRUPO · MAPA DO BURNOUT</div>
@@ -198,7 +204,8 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     </div>
     <div class="suc-info" id="suc-detalhes"></div>
     <button class="btn btn-pri" style="margin-top:18px" onclick="irQuestionario()">📝 Responder o Questionário agora</button>
-    <button class="btn btn-sec" onclick="compartilharWhats()">💬 Enviar código pelo WhatsApp</button>
+    <button class="btn btn-sec" onclick="enviarLinkLider(grupoCadastrado)">💬 Abrir WhatsApp com link para o grupo</button>
+    <p style="font-size:11px;color:var(--tf);margin:8px 0">O WhatsApp abrirá com a mensagem pronta; confirme o envio no aplicativo.</p>
     <button class="btn btn-sec" style="margin-top:6px" onclick="cadastrarOutro()">➕ Cadastrar outro grupo</button>
   </div>
 
@@ -207,24 +214,27 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 <div class="toast" id="toast"></div>
 
 <script>
-const DB='https://anamnese-dralucia-default-rtdb.firebaseio.com';
 const COL_GRUPOS='facunicamps-grupos';
 const COL_TURMAS='facunicamps-turmas';
 
 let turmaAtual=null;
-let gruposExistentes=[];
 let codigoGerado='';
 let buscaTimer=null;
 
 // Lógica de URL params ao carregar
 window.addEventListener('DOMContentLoaded',async function(){
+  try{
+    if(!window.fcConfigured)throw new Error('Configuração Firebase ausente.');
+    await fcEnsureAnonymous();
+  }catch(e){
+    toast('⚠️ O cadastro não pode ser enviado até configurar o acesso ao Firebase.');
+    document.getElementById('btn-salvar').disabled=true;
+  }
   const params=new URLSearchParams(window.location.search);
   const turmaParam=params.get('turma');
   const editarParam=params.get('editar');
-
   if(editarParam){
-    // Modo edição/consulta: busca o grupo pelo código
-    await carregarGrupoPorCodigo(editarParam.toUpperCase());
+    toast('Por segurança, a edição de dados do grupo deve ser feita pelo painel da pesquisadora.');
   } else if(turmaParam){
     // Preenche código da turma automaticamente
     const el=document.getElementById('cod-turma');
@@ -232,72 +242,14 @@ window.addEventListener('DOMContentLoaded',async function(){
   }
 });
 
-let grupoEditandoKey=null;
-
-async function carregarGrupoPorCodigo(cod){
-  toast('🔍 Carregando dados do grupo...',2000);
-  try{
-    const r=await fetch(DB+'/'+COL_GRUPOS+'.json');
-    const d=await r.json();
-    if(!d){toast('⚠️ Grupo não encontrado.');return;}
-    const found=Object.entries(d).find(([k,v])=>v.codigoGrupo===cod);
-    if(!found){toast('⚠️ Grupo não encontrado.');return;}
-    const [key,grupo]=found;
-    grupoEditandoKey=key;
-    // Preenche formulário com dados existentes
-    document.getElementById('cod-turma').value=grupo.codigoTurma||'';
-    await buscarTurma();
-    document.getElementById('ng-nome').value=grupo.nomeGrupo||'';
-    document.getElementById('ng-zap').value=grupo.zapLider||'';
-    // Preenche integrantes
-    const lista=document.getElementById('integrantes-lista');
-    lista.innerHTML='';
-    const ints=grupo.integrantes||[];
-    ints.forEach((nome,i)=>{
-      const div=document.createElement('div');
-      div.className='integrante-row';
-      div.innerHTML=`<input class="inp" type="text" value="${nome}" placeholder="Nome completo do integrante ${i+1}"><button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button>`;
-      lista.appendChild(div);
-    });
-    if(lista.children.length<2)adicionarIntegrante();
-    // Muda botão para "Salvar Alterações"
-    const btn=document.getElementById('btn-salvar');
-    btn.innerHTML='💾 Salvar Alterações';
-    btn.onclick=salvarEdicao;
-    // Mostra aviso de edição
-    const aviso=document.createElement('div');
-    aviso.style.cssText='background:#FFF8E1;border:1px solid #F0C030;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#7A5C00';
-    aviso.innerHTML='✏️ <b>Modo edição</b> — você está editando o grupo <b>'+cod+'</b>';
-    document.querySelector('.card').insertBefore(aviso,document.querySelector('.card').firstChild);
-    toast('✅ Dados carregados! Edite e salve.');
-  }catch(e){toast('❌ Erro ao carregar grupo.');}
-}
-
-async function salvarEdicao(){
-  if(!turmaAtual&&!grupoEditandoKey){toast('⚠️ Erro: turma não identificada.');return;}
-  const nome=document.getElementById('ng-nome').value.trim();
-  const zap=document.getElementById('ng-zap').value.trim().replace(/\D/g,'');
-  const integrantes=getIntegrantes();
-  if(!nome){toast('⚠️ Informe o nome do grupo.');return;}
-  if(!zap||zap.length<10){toast('⚠️ Informe o WhatsApp do líder com DDD.');return;}
-  if(integrantes.length<2){toast('⚠️ Adicione pelo menos 2 integrantes.');return;}
-  const btn=document.getElementById('btn-salvar');
-  btn.disabled=true;btn.textContent='⏳ Salvando...';
-  const upd={nomeGrupo:nome,zapLider:zap,integrantes,editado:new Date().toISOString()};
-  try{
-    await fetch(DB+'/'+COL_GRUPOS+'/'+grupoEditandoKey+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(upd)});
-    toast('✅ Grupo atualizado com sucesso!',3000);
-    btn.disabled=false;btn.innerHTML='💾 Salvar Alterações';
-  }catch(e){
-    toast('❌ Erro ao salvar alterações.');
-    btn.disabled=false;btn.innerHTML='💾 Salvar Alterações';
-  }
-}
-
 function toast(msg,dur=2800){
   const el=document.getElementById('toast');
   el.textContent=msg;el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),dur);
+}
+
+function escaparHtml(valor){
+  return String(valor||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 }
 
 // Busca turma pelo código digitado
@@ -314,7 +266,8 @@ async function buscarTurma(){
   buscaTimer=setTimeout(async()=>{
     load.style.display='block';
     try{
-      const r=await fetch(DB+'/'+COL_TURMAS+'.json');
+      const r=await fcFetch(COL_TURMAS+'.json');
+      if(!r.ok)throw new Error('Não foi possível buscar as turmas.');
       const d=await r.json();
       load.style.display='none';
       const found=d?Object.entries(d).find(([k,v])=>v.codigo&&v.codigo.toUpperCase()===cod.toUpperCase()):null;
@@ -326,7 +279,6 @@ async function buscarTurma(){
         document.getElementById('ti-sem').textContent=turmaAtual.semestre||'';
         document.getElementById('ti-prof').textContent=turmaAtual.prof||'';
         info.style.display='block';
-        await carregarGruposExistentes();
         atualizarCodigo();
       }else{
         toast('⚠️ Turma não encontrada. Verifique o código com a professora.');
@@ -335,22 +287,12 @@ async function buscarTurma(){
   },600);
 }
 
-async function carregarGruposExistentes(){
-  try{
-    const r=await fetch(DB+'/'+COL_GRUPOS+'.json');
-    const d=await r.json();
-    gruposExistentes=d?Object.values(d):[];
-  }catch(e){gruposExistentes=[];}
-}
-
 function atualizarCodigo(){
   if(!turmaAtual)return;
   const nome=document.getElementById('ng-nome').value.trim();
   if(!nome){document.getElementById('cod-preview').style.display='none';return;}
   const base=turmaAtual.codigo;
-  const iguais=gruposExistentes.filter(g=>g.codigoGrupo&&g.codigoGrupo.startsWith(base+'-G')).length;
-  const num=String(iguais+1).padStart(3,'0');
-  codigoGerado=base+'-G'+num;
+  if(!codigoGerado)codigoGerado=base+'-G'+Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
   document.getElementById('cod-preview-val').textContent=codigoGerado;
   document.getElementById('cod-preview').style.display='block';
 }
@@ -386,8 +328,6 @@ async function salvarGrupo(){
   if(integrantes.length<2){toast('⚠️ Adicione pelo menos 2 integrantes.');return;}
   const btn=document.getElementById('btn-salvar');
   btn.disabled=true;btn.textContent='⏳ Salvando...';
-  // Recarregar antes de salvar para evitar duplicata de sequência
-  await carregarGruposExistentes();
   atualizarCodigo();
   if(!codigoGerado){btn.disabled=false;btn.innerHTML='💾 Cadastrar Grupo e Gerar Código';return;}
   const data={
@@ -405,14 +345,15 @@ async function salvarGrupo(){
     ts:Date.now()
   };
   try{
-    const resp=await fetch(DB+'/'+COL_GRUPOS+'.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    const res=await resp.json();
-    data._key=res.name;
+    await fcEnsureAnonymous();
+    const resp=await fcFetch(COL_GRUPOS+'/'+encodeURIComponent(data.codigoGrupo)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!resp.ok)throw new Error('O Firebase recusou o cadastro do grupo.');
     mostrarSucesso(data);
-    // Envia link automaticamente para o WhatsApp do líder
-    setTimeout(()=>enviarLinkLider(data),800);
+    window.grupoCadastrado=data;
   }catch(e){
-    toast('❌ Erro ao salvar. Tente novamente.');
+    codigoGerado='';
+    atualizarCodigo();
+    toast(e.message||'❌ Erro ao salvar. Tente novamente.');
     btn.disabled=false;btn.innerHTML='💾 Cadastrar Grupo e Gerar Código';
   }
 }
@@ -422,12 +363,12 @@ function mostrarSucesso(data){
   const suc=document.getElementById('area-sucesso');
   suc.style.display='block';
   document.getElementById('suc-cod-val').textContent=data.codigoGrupo;
-  const listHtml=data.integrantes.map(n=>`<li>${n}</li>`).join('');
+  const listHtml=data.integrantes.map(n=>`<li>${escaparHtml(n)}</li>`).join('');
   document.getElementById('suc-detalhes').innerHTML=
-    `<b>Turma:</b> ${data.codigoTurma}<br>`+
-    `<b>Curso:</b> ${data.curso} — ${data.turnoNome} · ${data.semestre}º Semestre<br>`+
-    `<b>Grupo:</b> ${data.nomeGrupo}<br>`+
-    `<b>Responsável:</b> ${data.prof}<br>`+
+    `<b>Turma:</b> ${escaparHtml(data.codigoTurma)}<br>`+
+    `<b>Curso:</b> ${escaparHtml(data.curso)} — ${escaparHtml(data.turnoNome)} · ${escaparHtml(data.semestre)}º Semestre<br>`+
+    `<b>Grupo:</b> ${escaparHtml(data.nomeGrupo)}<br>`+
+    `<b>Responsável:</b> ${escaparHtml(data.prof)}<br>`+
     `<div class="integ-list"><ul>${listHtml}</ul></div>`+
     `<br><span style="font-size:11px;color:var(--tf)">Use este código ao responder o questionário para que seus resultados sejam agrupados corretamente.</span>`;
   window.scrollTo({top:0,behavior:'smooth'});
@@ -441,29 +382,29 @@ function copiarCodigo(){
 
 function irQuestionario(){
   const cod=document.getElementById('suc-cod-val').textContent;
-  window.location.href='https://luciakratz-arch.github.io/Psi-Facunicamps/?grupo='+encodeURIComponent(cod);
+  window.location.href=getLinkQuestionario(cod);
 }
 
 function getLinkQuestionario(cod){
-  return 'https://luciakratz-arch.github.io/Psi-Facunicamps/?grupo='+encodeURIComponent(cod);
-}
-
-function getLinkEdicao(cod){
-  return 'https://luciakratz-arch.github.io/Psi-Facunicamps/cadastro.html?editar='+encodeURIComponent(cod);
+  const link=new URL('index.html',location.href);
+  link.searchParams.set('grupo',cod);
+  link.searchParams.set('turma',turmaAtual?turmaAtual.codigo:'');
+  return link.href;
 }
 
 function enviarLinkLider(data){
-  const zap='55'+data.zapLider.replace(/^0/,'');
+  data=data||window.grupoCadastrado;
+  if(!data)return;
+  const numero=data.zapLider.replace(/\D/g,'').replace(/^0/,'');
+  const zap=numero.startsWith('55')?numero:'55'+numero;
   const cod=data.codigoGrupo;
   const linkQ=getLinkQuestionario(cod);
-  const linkE=getLinkEdicao(cod);
   const msg=encodeURIComponent(
     `Olá! 🎓 Grupo *${data.nomeGrupo}* cadastrado com sucesso!\n\n`+
     `🔑 Código: *${cod}*\n\n`+
-    `📝 Link do questionário (compartilhe com o grupo):\n${linkQ}\n\n`+
-    `✏️ Para consultar ou editar o cadastro do grupo:\n${linkE}`
+    `📝 Link do questionário (compartilhe com o grupo):\n${linkQ}`
   );
-  window.open('https://wa.me/'+zap+'?text='+msg,'_blank');
+  window.open('https://wa.me/'+zap+'?text='+msg,'_blank','noopener');
 }
 
 function compartilharWhats(){
@@ -481,6 +422,7 @@ function cadastrarOutro(){
   document.getElementById('turma-info').style.display='none';
   document.getElementById('cod-preview').style.display='none';
   turmaAtual=null;codigoGerado='';
+  window.grupoCadastrado=null;
   // Resetar integrantes para 2 campos
   const lista=document.getElementById('integrantes-lista');
   lista.innerHTML=

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resumo do Grupo — Facunicamps</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-client.js"></script>
+<style>
+body{margin:0;padding:24px;background:#eef3fb;color:#1a2a40;font:16px Arial,sans-serif}
+main{max-width:760px;margin:auto;background:white;border-radius:16px;padding:24px;box-shadow:0 4px 20px #0d2b6b22}
+h1{color:#0d2b6b}h2{font-size:18px}
+.note{padding:14px;background:#e8f0fb;border-radius:10px;line-height:1.55}
+.bar{display:grid;grid-template-columns:30px 1fr 1fr 50px;gap:8px;align-items:center;margin:14px 0}
+.track{height:12px;background:#e8f0fb;border-radius:8px;overflow:hidden}.fill{height:100%;background:#1a52b8}
+button{padding:12px 18px;border:0;border-radius:8px;background:#1a52b8;color:white;font-size:15px;font-weight:bold}
+#status{color:#8b1a1a}
+@media print{body{padding:0;background:#fff}main{box-shadow:none;padding:0;max-width:none}button{display:none}.note{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main>
+  <h1 id="title">Resumo científico descritivo</h1>
+  <p id="subtitle"></p>
+  <div id="status" role="status">Carregando relatório...</div>
+  <section id="report" hidden></section>
+  <p class="note">Este relatório apresenta estatísticas agregadas do grupo, não contém dados pessoais nem resultados individuais e não constitui diagnóstico clínico.</p>
+  <button id="print" type="button" onclick="window.print()" hidden>Salvar como PDF</button>
+</main>
+<script>
+async function carregar(){
+  const status=document.getElementById('status');
+  const token=new URLSearchParams(location.search).get('token');
+  if(!token||!/^[a-f0-9]{48}$/.test(token)){
+    status.textContent='Link de relatório inválido.';
+    return;
+  }
+  if(!window.fcConfigured){
+    status.textContent='O Firebase ainda não está configurado neste site.';
+    return;
+  }
+  try{
+    await fcEnsureAnonymous();
+    const response=await fcFetch('facunicamps-relatorios-publicos/'+token+'.json');
+    if(!response.ok)throw new Error('Não foi possível carregar o relatório.');
+    const data=await response.json();
+    if(!data||Number(data.respostas)<10){
+      status.textContent='Relatório indisponível. São necessárias pelo menos 10 respostas.';
+      return;
+    }
+    document.getElementById('title').textContent='Resumo científico descritivo — '+data.nomeGrupo;
+    document.title='Resumo - '+data.nomeGrupo;
+    document.getElementById('subtitle').textContent=data.codigoGrupo+' · '+data.codigoTurma+' · '+data.respostas+' respostas · '+new Date(data.geradoEm).toLocaleDateString('pt-BR');
+    const section=document.getElementById('report');
+    function addSection(title,text){
+      const article=document.createElement('article');
+      article.className='note';
+      const heading=document.createElement('h2');
+      heading.textContent=title;
+      const paragraph=document.createElement('p');
+      paragraph.textContent=text;
+      article.append(heading,paragraph);
+      section.appendChild(article);
+    }
+    addSection('Objetivo','Descrever indicadores autorrelatados associados às fases do burnout entre estudantes de Psicologia do Trabalho da Facunicamps, considerando as respostas dos participantes deste grupo.');
+    addSection('Público-alvo','Estudantes matriculados em Psicologia do Trabalho — Facunicamps, turma '+data.codigoTurma+', turno '+(data.turno||'não informado')+'. Este resultado refere-se somente aos participantes que responderam ao questionário neste grupo.');
+    addSection('Metodologia','Estudo exploratório e descritivo, de abordagem quantitativa, com participação voluntária e amostra por conveniência. Foi utilizado questionário on-line inspirado nas 12 fases atribuídas ao modelo de Freudenberger e North, com 36 itens (três por fase) respondidos em escala de autorrelato de cinco pontos. Calculam-se percentuais médios por fase e uma distribuição descritiva das faixas do instrumento. Não foram realizados testes de hipótese nem inferências para além desta amostra.');
+    const dist=data.distribuicao||{};
+    const counts=document.createElement('p');
+    counts.textContent='Distribuição descritiva — faixa inicial: '+(dist.baixo||0)+'; intermediária: '+(dist.moderado||0)+'; elevada: '+(dist.elevado||0)+'.';
+    section.appendChild(counts);
+    const topPhases=data.maioresFases||[];
+    addSection('Síntese dos resultados','As maiores médias descritivas foram observadas nas fases '+topPhases.map(phase=>phase.nome+' ('+phase.percentual+'%)').join(', ')+'. Na classificação descritiva do instrumento, '+(dist.baixo||0)+' de '+data.respostas+' respostas ficaram na faixa inicial, '+(dist.moderado||0)+' na intermediária e '+(dist.elevado||0)+' na elevada. Esses dados descrevem exclusivamente as respostas obtidas neste grupo.');
+    (data.fases||[]).forEach((phase,index)=>{
+      const row=document.createElement('div');
+      row.className='bar';
+      const num=document.createElement('strong');
+      num.textContent='F'+(index+1);
+      const name=document.createElement('span');
+      name.textContent=phase.nome;
+      const track=document.createElement('div');
+      track.className='track';
+      const fill=document.createElement('div');
+      fill.className='fill';
+      fill.style.width=Math.max(0,Math.min(100,Number(phase.percentual)||0))+'%';
+      track.appendChild(fill);
+      const pct=document.createElement('strong');
+      pct.textContent=(Number(phase.percentual)||0)+'%';
+      row.append(num,name,track,pct);
+      section.appendChild(row);
+    });
+    addSection('Considerações finais','Os achados oferecem um panorama inicial para reflexão e discussão acadêmica sobre saúde mental e condições de estudo. Por se tratar de autorrelato, amostra por conveniência e análise descritiva de um grupo, os resultados não permitem estabelecer diagnóstico, causalidade ou generalização para outros estudantes. Recomenda-se interpretar os resultados coletivos com acompanhamento docente e sem identificar participantes.');
+    const footer=document.createElement('p');
+    footer.textContent='Relatório agregado, sem nomes, telefones ou resultados individuais. Gerado em '+new Date(data.geradoEm).toLocaleDateString('pt-BR')+'.';
+    section.appendChild(footer);
+    section.hidden=false;
+    document.getElementById('print').hidden=false;
+    status.hidden=true;
+  }catch(error){
+    status.textContent=error.message||'Erro ao carregar o relatório.';
+  }
+}
+carregar();
+</script>
+</body>
+</html>

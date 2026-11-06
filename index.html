@@ -13,6 +13,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-client.js"></script>
 <style>
 :root {
   --bd:#0D2B6B;--bm:#1A52B8;--bl:#3A7FD4;
@@ -200,7 +205,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <button class="btn btn-cta" onclick="goTcle()">Começar &#8594;</button>
   </div>
   <div style="margin-top:16px;text-align:center">
-    <button class="btn-ghost btn" style="flex:none;display:inline-flex" onclick="go(5);carregarCodigosDisponiveis()">&#128202; Ver Relatório do Grupo</button>
+    <p style="font-size:12px;color:var(--ts);text-align:center;margin-top:12px">O relatório agregado do grupo é compartilhado pela professora após atingir o mínimo de 10 respostas.</p>
   </div>
 </div>
 
@@ -221,13 +226,13 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <p style="margin-bottom:10px">Avaliar o nível de burnout de estudantes universitários por meio das 12 fases do modelo de Freudenberger &amp; North, com fins de pesquisa científica e orientação psicoeducacional.</p>
 
     <p style="font-weight:700;color:var(--txt);margin:14px 0 6px">2. Procedimentos</p>
-    <p style="margin-bottom:10px">A participação consiste no preenchimento de um questionário digital com duração estimada de 6 a 10 minutos. As respostas serão registradas de forma automática em banco de dados seguro.</p>
+    <p style="margin-bottom:10px">A participação consiste no preenchimento de um questionário digital com duração estimada de 6 a 10 minutos. As respostas serão armazenadas no Firebase e o acesso a dados identificáveis deve ser limitado à pesquisadora pelas regras de segurança do projeto.</p>
 
     <p style="font-weight:700;color:var(--txt);margin:14px 0 6px">3. Riscos e Benefícios</p>
     <p style="margin-bottom:10px">Os riscos são mínimos, limitados a eventual desconforto emocional ao refletir sobre situações de estresse. Como benefício direto, você receberá um laudo individual com orientações. Os dados consolidados do grupo contribuirão para pesquisa científica sobre saúde mental universitária.</p>
 
     <p style="font-weight:700;color:var(--txt);margin:14px 0 6px">4. Confidencialidade e LGPD</p>
-    <p style="margin-bottom:10px">Seus dados pessoais serão tratados com estrita confidencialidade, conforme a <strong style="color:var(--txt)">Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>. Os dados coletados incluem nome, idade, gênero, curso e WhatsApp, utilizados exclusivamente para identificação dos resultados e envio do laudo. Nenhuma informação será compartilhada com terceiros ou divulgada publicamente de forma identificada.</p>
+    <p style="margin-bottom:10px">Seus dados pessoais serão tratados conforme a <strong style="color:var(--txt)">Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>. Os dados coletados incluem nome, idade, gênero, curso e WhatsApp e serão armazenados no Firebase, serviço do Google, para a pesquisa e a devolutiva. O acesso aos dados identificáveis deve ser restrito à pesquisadora. Relatórios compartilhados com os grupos conterão apenas resultados agregados, sem nomes ou telefones.</p>
 
     <p style="font-weight:700;color:var(--txt);margin:14px 0 6px">5. Voluntariedade</p>
     <p style="margin-bottom:10px">A participação é <strong style="color:var(--txt)">totalmente voluntária</strong>. Você pode recusar-se a participar ou interromper a qualquer momento, sem qualquer prejuízo acadêmico ou institucional.</p>
@@ -363,7 +368,8 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
   <div class="codigo-box">
     <label class="lbl">&#127991; Código do Grupo *</label>
     <p>Informe o código fornecido pelo(a) professor(a) ou coordenador(a). Ele vincula sua resposta ao grupo para o relatório coletivo.</p>
-    <input class="inp inp-codigo" id="codigo" type="text" maxlength="25" placeholder="Ex: 26-2-PSI-MAT-G001" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
+    <input class="inp inp-codigo" id="codigo" type="text" maxlength="40" placeholder="Ex: 26-2-PSITRAB-MAT-GXXXXXXXXXXXX" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
+    <div id="grupo-link-info" style="display:none;font-size:12px;color:var(--ts);margin-top:8px"></div>
   </div>
   <div class="btn-row">
     <button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button>
@@ -391,26 +397,12 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 
 <!-- S5: Acesso ao relatório do grupo -->
 <div class="step" id="s5">
-  <div class="rel-form">
-    <h2>&#128202; Relatório do Grupo</h2>
-    <p>Informe o código do grupo para acessar o relatório consolidado com os resultados de todos os participantes deste código.</p>
-    <label class="lbl">Código do Grupo</label>
-    <input class="inp inp-codigo" id="codigo-rel" type="text" maxlength="25" placeholder="Ex: 26-2-PSI-MAT-G001" oninput="this.value=this.value.toUpperCase()">
-    <div id="codigos-sugeridos" style="display:none;margin-top:8px">
-      <div style="font-size:11px;font-weight:700;color:var(--tf);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">&#128278; Grupos com respostas:</div>
-      <div id="chips-codigos" style="display:flex;flex-wrap:wrap;gap:6px"></div>
-    </div>
-    <div id="msg-rel">Código não encontrado ou sem respostas registradas ainda.</div>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button>
-      <button class="btn btn-rel" id="btn-ver-rel" onclick="carregarRelatorio()">&#128202; Ver Relatório</button>
-    </div>
-  </div>
+  <div class="sc"><h2>Relatório agregado</h2><p>O link privado do relatório é enviado ao líder após a liberação pela pesquisadora. São necessárias pelo menos 10 respostas.</p><button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button></div>
 </div>
 
 <!-- S6: Relatório do grupo (dados) -->
 <div class="step" id="s6">
-  <div id="relatorio-area"></div>
+  <div class="sc">Os relatórios de grupo são acessados pelo link seguro enviado pela pesquisadora.</div>
 </div>
 
 </div>
@@ -426,6 +418,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 
 <script>
 const ST={nome:'',idade:0,genero:'',estado_civil:'',vinculo:'',curso:'',tipo_trabalho:'',profissao:'',zap:'',codigo:'',scores:{}};
+function escaparHtml(valor){return String(valor||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));}
 
 function atualizarCamposVinculo(){
   const v=document.getElementById('vinculo').value;
@@ -604,7 +597,7 @@ function calcularEMostrar(){
   const fasesHi=fs.filter(f=>f.pct>=60);
   const curso_info=ST.curso?' · '+ST.curso:'';
   const trab_info=ST.tipo_trabalho?' · '+ST.tipo_trabalho:'';
-  let html='<div class="res-hero"><h2>Olá, '+ST.nome.split(' ')[0]+'! Seu resultado está pronto.</h2><p>'+ST.genero+' · '+ST.idade+' anos · '+ST.estado_civil+'</p><p style="margin-top:4px;font-size:12px;color:rgba(255,255,255,.75)">'+ST.vinculo+curso_info+trab_info+' · Grupo: <strong>'+ST.codigo+'</strong></p></div>';
+  let html='<div class="res-hero"><h2>Olá, '+escaparHtml(ST.nome.split(' ')[0])+'! Seu resultado está pronto.</h2><p>'+escaparHtml(ST.genero)+' · '+ST.idade+' anos · '+escaparHtml(ST.estado_civil)+'</p><p style="margin-top:4px;font-size:12px;color:rgba(255,255,255,.75)">'+escaparHtml(ST.vinculo+curso_info+trab_info)+' · Grupo: <strong>'+escaparHtml(ST.codigo)+'</strong></p></div>';
   html+='<div class="nivel-card '+bi.cls+'"><div class="nivel-ttl">'+bi.icon+' Risco de Burnout</div><div class="nivel-val">'+bi.nivel+(bi.fa>0?' <span style="font-size:16px;opacity:.7">· Fase '+bi.fa+'</span>':'')+'</div><div class="nivel-desc">'+bi.txt+'</div></div>';
   html+='<div class="sc"><div class="sc-ttl">&#128202; Seu perfil nas 12 fases</div>';
   fs.forEach(({fase,pct})=>{
@@ -623,7 +616,7 @@ function calcularEMostrar(){
   else rec='&#128154; Você está em um bom momento. Continue investindo em equilíbrio entre vida pessoal e obrigações.';
   html+='<div class="sc" style="border-left:4px solid var(--bm)"><div class="sc-ttl">&#128172; Recomendação</div><div style="font-size:14px;color:var(--txt);line-height:1.65">'+rec+'</div></div>';
   html+='<div class="share-sec"><h3>&#128242; Compartilhe</h3><p>Envie seu resultado ou acesse o relatório do seu grupo.</p><div class="share-btns"><button class="btn btn-wa" onclick="shareWA()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Compartilhar via WhatsApp</button>';
-  html+='<button class="btn btn-rel" onclick="abrirRelatorioGrupo()">&#128202; Ver Relatório do Grupo '+ST.codigo+'</button>';
+  html+='<p style="font-size:12px;color:var(--ts)">O relatório agregado será enviado pelo líder do grupo quando houver pelo menos 10 respostas.</p>';
   html+='<button class="btn btn-sec" onclick="location.reload()">&#128260; Refazer</button></div>';
   html+='<div style="margin-top:14px"><p style="font-size:12px;color:var(--ts);margin-bottom:6px;font-weight:600">&#128203; Clique na caixa e copie (Ctrl+A &#8594; Ctrl+C):</p><textarea id="txt-resultado" readonly onclick="this.select()" style="width:100%;min-height:160px;padding:12px;border:2px solid var(--bm);border-radius:10px;background:var(--sur2);color:var(--txt);font-family:var(--ff2);font-size:13px;line-height:1.6;resize:vertical;cursor:text"></textarea></div></div>';
   el.innerHTML=html;
@@ -631,92 +624,68 @@ function calcularEMostrar(){
   if(txta){
     const alt=fs.filter(f=>f.pct>=60);
     txta.value='&#128293; MAPA DO BURNOUT — FACUNICAMPS\n'+'─'.repeat(38)+'\n'+'👤 '+ST.nome+' · '+ST.idade+' anos · '+ST.vinculo+'\n'+'🏷️ Grupo: '+ST.codigo+'\n\n'+'🔥 RISCO: '+bi.nivel+(bi.fa>0?' · Fase '+bi.fa:'')+'\n\n'+(alt.length>0?'⚠️ FASES EM DESTAQUE:\n'+alt.map(f=>'  • Fase '+f.fase.num+' — '+f.fase.nome+': '+f.pct+'%').join('\n')+'\n\n':'')+
-    '✨ Faça a avaliação:\nhttps://luciakratz-arch.github.io/FACUNICAMPSburnout/\n📍 Facunicamps — Faculdade Unicamps';
+    '✨ Faça a avaliação:\n'+location.origin+location.pathname+'\n📍 Facunicamps — Faculdade Unicamps';
   }
   go(4);
-  salvarFirebase(fs,bi);
+  salvarFirebase(fs,bi).catch(error=>{
+    const aviso=document.createElement('p');
+    aviso.className='sc';
+    aviso.textContent='⚠️ Não foi possível registrar a resposta. Verifique a conexão ou a configuração do Firebase e contate a pesquisadora antes de reenviar.';
+    document.getElementById('resultado-area').prepend(aviso);
+    console.error(error);
+  });
 }
 
 function shareWA(){
   const fs=calcular();const bi=riscoBurnout(fs);
-  const msg=encodeURIComponent('🔥 *Mapa do Burnout · Facunicamps*\n\nAcabei de fazer a avaliação!\n\n🔥 *Risco:* '+bi.nivel+(bi.fa>0?' · Fase '+bi.fa:'')+'\n\n✨ Faça o seu:\nhttps://luciakratz-arch.github.io/FACUNICAMPSburnout/\n\n📍 *Facunicamps — Faculdade Unicamps*');
+  const msg=encodeURIComponent('🔥 *Mapa do Burnout · Facunicamps*\n\nAcabei de fazer a avaliação!\n\n🔥 *Risco:* '+bi.nivel+(bi.fa>0?' · Fase '+bi.fa:'')+'\n\n✨ Faça o seu:\n'+location.origin+location.pathname+'\n\n📍 *Facunicamps — Faculdade Unicamps*');
   window.open('https://wa.me/?text='+msg,'_blank');
 }
 
-const DB='https://anamnese-dralucia-default-rtdb.firebaseio.com';
 const COL='facunicamps-burnout';
 
 async function salvarFirebase(fs,bi){
-  try{
-    const data={nome:ST.nome,idade:ST.idade,genero:ST.genero,estado_civil:ST.estado_civil,vinculo:ST.vinculo,curso:ST.curso||'',tipo_trabalho:ST.tipo_trabalho,profissao:ST.profissao||'',zap:ST.zap,codigo:ST.codigo,risco:bi.nivel,faseAtiva:bi.fa,mediaGeral:Math.round(bi.mg),fases:Object.fromEntries(fs.map(f=>['f'+f.fase.num,f.pct])),ts:new Date().toISOString()};
-    await fetch(DB+'/'+COL+'.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  }catch(e){console.warn('Firebase:',e)}
+  await fcEnsureAnonymous();
+  const data={nome:ST.nome,idade:ST.idade,genero:ST.genero,estado_civil:ST.estado_civil,vinculo:ST.vinculo,curso:ST.curso||'',tipo_trabalho:ST.tipo_trabalho,profissao:ST.profissao||'',zap:ST.zap,codigo:ST.codigo,risco:bi.nivel,faseAtiva:bi.fa,mediaGeral:Math.round(bi.mg),fases:Object.fromEntries(fs.map(f=>['f'+f.fase.num,f.pct])),ts:new Date().toISOString()};
+  const uid=fcAuth.currentUser.uid;
+  const response=await fcFetch(COL+'/'+uid+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  if(!response.ok)throw new Error('Firebase recusou a gravação da resposta.');
 }
 
 function abrirRelatorioGrupo(){
-  document.getElementById('codigo-rel').value=ST.codigo;
-  go(5);
-  carregarCodigosDisponiveis();
-  setTimeout(()=>carregarRelatorio(),100);
+  alert('Peça ao líder do grupo o link do relatório agregado. Ele será liberado após 10 respostas.');
 }
 
 async function carregarCodigosDisponiveis(){
-  const wrap=document.getElementById('codigos-sugeridos');
-  const chips=document.getElementById('chips-codigos');
-  // Tenta restaurar último código usado
-  try{const ult=localStorage.getItem('fac_ultimo_cod');if(ult&&!document.getElementById('codigo-rel').value){document.getElementById('codigo-rel').value=ult;}}catch(e){}
-  try{
-    const res=await fetch(DB+'/'+COL+'.json?shallow=true');
-    const raw=await res.json();
-    if(!raw)return;
-    // Buscar todos registros para extrair códigos únicos
-    const res2=await fetch(DB+'/'+COL+'.json');
-    const todos=await res2.json();
-    if(!todos)return;
-    const codsUnicos=[...new Set(Object.values(todos).map(r=>r.codigo).filter(Boolean))].sort();
-    if(codsUnicos.length===0)return;
-    chips.innerHTML='';
-    codsUnicos.forEach(cod=>{
-      const btn=document.createElement('button');
-      btn.className='chip-cod';
-      btn.textContent=cod;
-      btn.onclick=()=>{
-        document.getElementById('codigo-rel').value=cod;
-        document.querySelectorAll('.chip-cod').forEach(b=>b.classList.remove('ativo'));
-        btn.classList.add('ativo');
-        try{localStorage.setItem('fac_ultimo_cod',cod);}catch(e){}
-      };
-      chips.appendChild(btn);
-    });
-    wrap.style.display='block';
-    // Marcar chip do código atual se existir
-    const atual=document.getElementById('codigo-rel').value;
-    if(atual){document.querySelectorAll('.chip-cod').forEach(b=>{if(b.textContent===atual)b.classList.add('ativo');});}
-  }catch(e){console.warn('Chips:',e);}
+  document.getElementById('msg-rel').textContent='O relatório agregado é compartilhado por link pela professora após atingir 10 respostas.';
 }
 
 async function carregarRelatorio(){
-  const codigo=document.getElementById('codigo-rel').value.trim().toUpperCase();
-  const msgEl=document.getElementById('msg-rel');
-  if(!codigo){alert('Informe o código do grupo.');return}
-  msgEl.style.display='none';
-  const btn=document.getElementById('btn-ver-rel');
-  if(btn) btn.textContent='⏳ Carregando...';
-  const isAdmin=(codigo==='1234');
-  if(!isAdmin){try{localStorage.setItem('fac_ultimo_cod',codigo);}catch(e){}}
-  try{
-    let raw;
-    if(isAdmin){
-      const res=await fetch(DB+'/'+COL+'.json');
-      raw=await res.json();
-    }else{
-      const res=await fetch(DB+'/'+COL+'.json?orderBy="codigo"&equalTo="'+codigo+'"');
-      raw=await res.json();
-    }
-    if(!raw||Object.keys(raw).length===0){msgEl.style.display='block';if(btn)btn.textContent='📊 Ver Relatório';return;}
-    renderRelatorio(isAdmin?'TODOS OS GRUPOS':codigo,Object.values(raw),isAdmin);
-  }catch(e){msgEl.style.display='block';msgEl.textContent='Erro ao carregar. Verifique sua conexão.';if(btn)btn.textContent='📊 Ver Relatório';}
+  alert('Use o link do relatório agregado enviado pela professora.');
 }
+
+window.addEventListener('DOMContentLoaded',async()=>{
+  const params=new URLSearchParams(location.search);
+  const codigo=params.get('grupo');
+  const turma=params.get('turma');
+  if(codigo){
+    const input=document.getElementById('codigo');
+    input.value=codigo.toUpperCase();
+    input.readOnly=true;
+    document.getElementById('grupo-link-info').textContent='Turma '+(turma||'')+' · grupo '+codigo.toUpperCase()+' (preenchido pelo link)';
+    document.getElementById('grupo-link-info').style.display='block';
+  }
+  try{
+    if(!window.fcConfigured)throw new Error('Configuração Firebase ausente.');
+    await fcEnsureAnonymous();
+  }catch(error){
+    const notice=document.createElement('p');
+    notice.className='sc';
+    notice.textContent='O questionário está temporariamente indisponível até a configuração segura do Firebase.';
+    document.querySelector('.main').prepend(notice);
+    document.querySelector('#s1 .btn-cta').disabled=true;
+  }
+});
 
 function renderRelatorio(codigo,registros,isAdmin){
   const n=registros.length;
@@ -774,7 +743,7 @@ function renderRelatorio(codigo,registros,isAdmin){
   el.innerHTML=html;
   const txta=document.getElementById('txt-relatorio');
   if(txta) txta.value='📊 RELATÓRIO DO GRUPO — MAPA DO BURNOUT\nFacunicamps — Faculdade Unicamps\n'+'─'.repeat(40)+'\n'+'🏷️ Grupo: '+codigo+'\n'+'👥 '+n+' participante'+(n>1?'s':'')+' | Baixo risco: '+dist.ok+' | Atenção/Alto: '+(dist.mod+dist.hi)+'\n'+'📅 '+new Date().toLocaleDateString('pt-BR')+'\n\n'+'🔥 MÉDIA POR FASE:\n'+fasePcts.map(f=>'  Fase '+f.fase.num+' — '+f.fase.nome+': '+f.pct+'%').join('\n')+'\n\n'+(fasesCrit.length>0?'⚠️ FASES QUE MERECEM ATENÇÃO:\n'+fasesCrit.map(f=>'  • Fase '+f.fase.num+' — '+f.fase.nome+': '+f.pct+'%').join('\n')+'\n\n':'')+
-  '✨ https://luciakratz-arch.github.io/FACUNICAMPSburnout/';
+  '✨ '+location.origin+location.pathname;
   go(6);
 }
 </script>

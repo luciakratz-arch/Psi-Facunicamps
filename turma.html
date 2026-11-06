@@ -7,6 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-client.js"></script>
 <style>
 :root{
   --bd:#0D2B6B;--bm:#1A52B8;--bl:#3A7FD4;
@@ -30,6 +35,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 
 .hdr{background:linear-gradient(135deg,var(--bd),var(--bm));padding:11px 16px 13px;display:flex;align-items:center;gap:12px;border-bottom:4px solid var(--gold);position:sticky;top:env(safe-area-inset-top,0);z-index:200;box-shadow:var(--sh2)}
 .hdr-icon{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.hdr-icon img{width:36px;height:36px;object-fit:contain}
 .hdr-text{display:flex;flex-direction:column}
 .hdr-name{font-family:var(--ff1);font-weight:900;font-size:16px;color:#fff;letter-spacing:.3px;line-height:1.1}
 .hdr-sub{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.4px;font-weight:600}
@@ -89,7 +95,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 <body>
 
 <div class="hdr">
-  <div class="hdr-icon">🎓</div>
+  <div class="hdr-icon"><img src="facunicamps-logo.png" alt="Facunicamps"></div>
   <div class="hdr-text">
     <div class="hdr-name">Facunicamps</div>
     <div class="hdr-sub">CADASTRO DE TURMA · ÁREA DA PROFESSORA</div>
@@ -103,12 +109,9 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <div class="login-card">
       <div class="login-icon">🔐</div>
       <div class="login-titulo">Acesso da Professora</div>
-      <div class="login-sub">Digite a senha para cadastrar uma nova turma</div>
-      <div class="fg">
-        <input class="inp" id="senha-inp" type="password" placeholder="Senha" style="text-align:center;letter-spacing:3px;font-size:18px" onkeydown="if(event.key==='Enter')entrar()">
-      </div>
-      <button class="btn btn-pri" onclick="entrar()">🔓 Entrar</button>
-      <div class="login-erro" id="login-erro">❌ Senha incorreta</div>
+      <div class="login-sub">Entre com a conta Google autorizada</div>
+      <button class="btn btn-pri" onclick="entrar()">🔐 Entrar com Google</button>
+      <div class="login-erro" id="login-erro"></div>
     </div>
   </div>
 
@@ -117,6 +120,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <div class="card" style="padding:16px">
       <div class="card-ttl" style="margin-bottom:12px">📋 Turmas Cadastradas</div>
       <div id="lista-turmas"><div style="color:var(--tf);font-size:13px">Carregando...</div></div>
+      <button class="btn btn-sec" onclick="cadastrarTurmasPesquisa()">➕ Preparar as duas turmas Psi Trabalho — 2026/2</button>
     </div>
   </div>
 
@@ -155,6 +159,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
           <option>Nutrição</option>
           <option>Odontologia</option>
           <option>Psicologia</option>
+          <option>Psicologia do Trabalho</option>
           <option>Educação Física</option>
           <option>Administração</option>
           <option>Ciências Contábeis</option>
@@ -264,13 +269,11 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 <div class="toast" id="toast"></div>
 
 <script>
-const DB='https://anamnese-dralucia-default-rtdb.firebaseio.com';
 const COL_TURMAS='facunicamps-turmas';
-const SENHA='facunicamps2026';
 
 const PREFIXOS={
   'Enfermagem':'ENF','Farmácia':'FAR','Fisioterapia':'FIS','Nutrição':'NUT',
-  'Odontologia':'ODO','Psicologia':'PSI','Educação Física':'EDF',
+  'Odontologia':'ODO','Psicologia':'PSI','Psicologia do Trabalho':'PSITRAB','Educação Física':'EDF',
   'Administração':'ADM','Ciências Contábeis':'CON','Direito':'DIR',
   'Pedagogia':'PED','Serviço Social':'SSO','Comunicação Social':'COM',
   'Gestão de RH':'GRH','Gestão Pública':'GPU','Logística':'LOG',
@@ -283,27 +286,54 @@ const PREFIXOS={
 let turmasExistentes=[];
 let codigoGerado='';
 
-function entrar(){
-  const s=document.getElementById('senha-inp').value;
-  if(s===SENHA){
+async function entrar(){
+  const error=document.getElementById('login-erro');
+  error.style.display='none';
+  try{
+    if(!window.fcConfigured)throw new Error('Preencha firebase-config.js com a configuração Web do Firebase.');
+    await fcSignInWithGoogle();
+    await carregarTurmas();
     document.getElementById('area-login').style.display='none';
     document.getElementById('area-turmas').style.display='block';
     document.getElementById('area-form').style.display='block';
-    carregarTurmas();
-  }else{
-    document.getElementById('login-erro').style.display='block';
-    document.getElementById('senha-inp').value='';
-    document.getElementById('senha-inp').focus();
+  }catch(e){
+    error.textContent=e.message||'Não foi possível entrar com Google.';
+    error.style.display='block';
   }
 }
 
 async function carregarTurmas(){
   try{
-    const r=await fetch(DB+'/'+COL_TURMAS+'.json');
+    const r=await fcFetch(COL_TURMAS+'.json');
+    if(!r.ok)throw new Error('Não foi possível carregar as turmas.');
     const d=await r.json();
     turmasExistentes=d?Object.values(d):[];
     renderizarTurmas(d);
-  }catch(e){turmasExistentes=[];renderizarTurmas(null);}
+  }catch(e){turmasExistentes=[];renderizarTurmas(null);throw e;}
+}
+
+async function cadastrarTurmasPesquisa(){
+  const btn=document.querySelector('button[onclick="cadastrarTurmasPesquisa()"]');
+  btn.disabled=true;
+  try{
+    const anos=[
+      {codigo:'26-2-PSITRAB-MAT',turno:'MAT',turnoNome:'Matutino'},
+      {codigo:'26-2-PSITRAB-NOT',turno:'NOT',turnoNome:'Noturno'}
+    ];
+    const response=await fcFetch(COL_TURMAS+'.json');
+    if(!response.ok)throw new Error('Não foi possível verificar as turmas existentes.');
+    const current=await response.json()||{};
+    for(const turma of anos){
+      const anterior=Object.values(current).find(item=>item.codigo===turma.codigo);
+      if(current[turma.codigo])continue;
+      const data={...anterior,codigo:turma.codigo,ano:'26',semAno:'2',curso:'Psicologia do Trabalho',turno:turma.turno,turnoNome:turma.turnoNome,semestre:'2',prof:'Profa. Dra. Lucia Kratz',disciplina:'Psicologia do Trabalho',criado:anterior?.criado||new Date().toISOString(),ts:anterior?.ts||Date.now()};
+      const save=await fcFetch(COL_TURMAS+'/'+turma.codigo+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+      if(!save.ok)throw new Error('O Firebase recusou o cadastro da turma '+turma.codigo+'.');
+    }
+    await carregarTurmas();
+    toast('✅ Turmas matutina e noturna de Psi Trabalho 2026/2 preparadas.');
+  }catch(e){toast(e.message||'❌ Erro ao preparar as turmas.');}
+  finally{btn.disabled=false;}
 }
 
 function renderizarTurmas(d){
@@ -314,7 +344,7 @@ function renderizarTurmas(d){
   }
   const turmas=Object.entries(d).sort((a,b)=>b[1].ts-a[1].ts);
   el.innerHTML=turmas.map(([key,t])=>{
-    const link='https://luciakratz-arch.github.io/Psi-Facunicamps/cadastro.html?turma='+encodeURIComponent(t.codigo);
+    const link=new URL('cadastro.html?turma='+encodeURIComponent(t.codigo),location.href).href;
     return `<div style="border:1px solid var(--bor);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:var(--sur2)">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div>
@@ -331,7 +361,7 @@ function renderizarTurmas(d){
 }
 
 function compartilharTurmaWhats(cod){
-  const link='https://luciakratz-arch.github.io/Psi-Facunicamps/cadastro.html?turma='+encodeURIComponent(cod);
+  const link=new URL('cadastro.html?turma='+encodeURIComponent(cod),location.href).href;
   const msg=encodeURIComponent(`Olá! 🎓\n\nPara participar da pesquisa *Mapa do Burnout Universitário*, um integrante do grupo deve acessar o link abaixo e cadastrar o grupo da equipe.\n\n📋 Link de cadastro (já com o código da turma):\n${link}\n\nApós cadastrar o grupo, todos os integrantes respondem o questionário individualmente usando o código do grupo gerado.`);
   window.open('https://wa.me/?text='+msg,'_blank');
 }
@@ -371,7 +401,7 @@ async function salvarTurma(){
   }
   const btn=document.getElementById('btn-salvar');
   btn.disabled=true;btn.textContent='⏳ Salvando...';
-  await carregarTurmas();
+  try{await carregarTurmas();}catch(e){toast(e.message||'Erro ao carregar turmas.');btn.disabled=false;btn.innerHTML='💾 Cadastrar Turma e Gerar Código';return;}
   atualizarCodigo();
   if(!codigoGerado){btn.disabled=false;btn.innerHTML='💾 Cadastrar Turma e Gerar Código';return;}
   // Verificar se já existe essa turma
@@ -391,10 +421,12 @@ async function salvarTurma(){
     ts:Date.now()
   };
   try{
-    await fetch(DB+'/'+COL_TURMAS+'.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    await fcEnsureAnonymous();
+    const response=await fcFetch(COL_TURMAS+'/'+encodeURIComponent(data.codigo)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!response.ok)throw new Error('O Firebase recusou o cadastro da turma.');
     mostrarSucesso(data);
   }catch(e){
-    toast('❌ Erro ao salvar. Tente novamente.');
+    toast(e.message||'❌ Erro ao salvar. Tente novamente.');
     btn.disabled=false;btn.innerHTML='💾 Cadastrar Turma e Gerar Código';
   }
 }

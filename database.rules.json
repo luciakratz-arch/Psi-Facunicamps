@@ -1,0 +1,32 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "facunicamps-turmas": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'contato@aequipe.com.br' && auth.token.email_verified === true"
+    },
+    "facunicamps-grupos": {
+      ".read": "auth != null && auth.token.email === 'contato@aequipe.com.br' && auth.token.email_verified === true",
+      "$codigo": {
+        ".write": "auth != null && (auth.token.email === 'contato@aequipe.com.br' && auth.token.email_verified === true || auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-turmas').child(newData.child('codigoTurma').val()).exists())",
+        ".validate": "newData.hasChildren(['codigoGrupo', 'codigoTurma', 'nomeGrupo', 'zapLider']) && newData.child('codigoGrupo').val() === $codigo && newData.child('codigoGrupo').val().matches(/^[A-Z0-9-]{1,40}$/)"
+      }
+    },
+    "facunicamps-burnout": {
+      ".read": "auth != null && auth.token.email === 'contato@aequipe.com.br' && auth.token.email_verified === true",
+      "$resposta": {
+        ".write": "auth != null && (auth.token.email === 'contato@aequipe.com.br' && auth.token.email_verified === true || auth.token.firebase.sign_in_provider === 'anonymous' && auth.uid === $resposta && !data.exists() && root.child('facunicamps-grupos').child(newData.child('codigo').val()).exists())",
+        ".validate": "newData.hasChildren(['nome', 'codigo', 'fases', 'risco', 'ts'])"
+      }
+    },
+    "facunicamps-relatorios-publicos": {
+      ".read": false,
+      "$token": {
+        ".read": true,
+        ".write": "auth != null && auth.token.email === 'contato@aequipe.com.br' && auth.token.email_verified === true",
+        ".validate": "newData.hasChildren(['nomeGrupo', 'codigoGrupo', 'codigoTurma', 'respostas', 'fases', 'distribuicao', 'geradoEm'])"
+      }
+    }
+  }
+}
