@@ -16,7 +16,7 @@
     "facunicamps-burnout": {
       ".read": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true",
       "$resposta": {
-        ".write": "auth != null && (auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || auth.token.firebase.sign_in_provider === 'anonymous' && auth.uid === $resposta && !data.exists() && root.child('facunicamps-grupos').child(newData.child('codigo').val()).exists())",
+        ".write": "auth != null && (auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || auth.token.firebase.sign_in_provider === 'anonymous' && (newData.child('envioId').val() === $resposta && (!data.exists() || data.child('envioId').val() === $resposta) || auth.uid === $resposta && !data.exists()) && root.child('facunicamps-grupos').child(newData.child('codigo').val()).exists())",
         ".validate": "newData.hasChildren(['nome', 'codigo', 'fases', 'risco', 'ts'])"
       }
     },
