@@ -204,6 +204,9 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
   <div class="btn-row">
     <button class="btn btn-cta" onclick="goTcle()">Começar &#8594;</button>
   </div>
+  <div class="btn-row">
+    <button class="btn btn-sec" onclick="verPreviaResultado()">Ver prévia do resultado</button>
+  </div>
   <div style="margin-top:16px;text-align:center">
     <p style="font-size:12px;color:var(--ts);text-align:center;margin-top:12px">O relatório agregado do grupo é compartilhado pela professora após atingir o mínimo de 10 respostas.</p>
   </div>
@@ -521,6 +524,10 @@ function pick(btn,id,val){
   ST.scores[id]=val;
 }
 
+function verPreviaResultado(){
+  window.location.href=new URL('index.html?demo=resultado',location.href).href;
+}
+
 function valStep2(){
   const n=document.getElementById('nome').value.trim();
   const a=document.getElementById('idade').value;
@@ -590,7 +597,7 @@ function riscoBurnout(fs){
   return{nivel,cls,icon,txt,fa,mg};
 }
 
-function calcularEMostrar(){
+function calcularEMostrar(isPreview=false){
   const fs=calcular();
   const bi=riscoBurnout(fs);
   const el=document.getElementById('resultado-area');
@@ -598,6 +605,7 @@ function calcularEMostrar(){
   const curso_info=ST.curso?' · '+ST.curso:'';
   const trab_info=ST.tipo_trabalho?' · '+ST.tipo_trabalho:'';
   let html='<div class="res-hero"><h2>Olá, '+escaparHtml(ST.nome.split(' ')[0])+'! Seu resultado está pronto.</h2><p>'+escaparHtml(ST.genero)+' · '+ST.idade+' anos · '+escaparHtml(ST.estado_civil)+'</p><p style="margin-top:4px;font-size:12px;color:rgba(255,255,255,.75)">'+escaparHtml(ST.vinculo+curso_info+trab_info)+' · Grupo: <strong>'+escaparHtml(ST.codigo)+'</strong></p></div>';
+  if(isPreview)html='<div class="sc" role="status"><strong>Prévia demonstrativa.</strong> Estes dados são fictícios; nada foi enviado nem salvo.</div>'+html;
   html+='<div class="nivel-card '+bi.cls+'"><div class="nivel-ttl">'+bi.icon+' Risco de Burnout</div><div class="nivel-val">'+bi.nivel+(bi.fa>0?' <span style="font-size:16px;opacity:.7">· Fase '+bi.fa+'</span>':'')+'</div><div class="nivel-desc">'+bi.txt+'</div></div>';
   html+='<div class="sc"><div class="sc-ttl">&#128202; Seu perfil nas 12 fases</div>';
   fs.forEach(({fase,pct})=>{
@@ -620,6 +628,10 @@ function calcularEMostrar(){
   html+='<button class="btn btn-sec" onclick="location.reload()">&#128260; Refazer</button></div>';
   html+='<div style="margin-top:14px"><p style="font-size:12px;color:var(--ts);margin-bottom:6px;font-weight:600">&#128203; Clique na caixa e copie (Ctrl+A &#8594; Ctrl+C):</p><textarea id="txt-resultado" readonly onclick="this.select()" style="width:100%;min-height:160px;padding:12px;border:2px solid var(--bm);border-radius:10px;background:var(--sur2);color:var(--txt);font-family:var(--ff2);font-size:13px;line-height:1.6;resize:vertical;cursor:text"></textarea></div></div>';
   el.innerHTML=html;
+  if(isPreview){
+    el.querySelector('.share-sec')?.remove();
+    document.getElementById('txt-resultado')?.parentElement.remove();
+  }
   const txta=document.getElementById('txt-resultado');
   if(txta){
     const alt=fs.filter(f=>f.pct>=60);
@@ -627,6 +639,7 @@ function calcularEMostrar(){
     '✨ Faça a avaliação:\n'+location.origin+location.pathname+'\n📍 Facunicamps — Faculdade Unicamps';
   }
   go(4);
+  if(isPreview)return;
   salvarFirebase(fs,bi).catch(error=>{
     const aviso=document.createElement('p');
     aviso.className='sc';
@@ -666,6 +679,21 @@ async function carregarRelatorio(){
 
 window.addEventListener('DOMContentLoaded',async()=>{
   const params=new URLSearchParams(location.search);
+  if(params.get('demo')==='resultado'){
+    Object.assign(ST,{
+      nome:'Participante de demonstração',
+      idade:25,
+      genero:'Prefiro não informar',
+      estado_civil:'Solteiro(a)',
+      vinculo:'Aluno(a)',
+      curso:'Psicologia do Trabalho',
+      tipo_trabalho:'Estudante',
+      codigo:'DEMONSTRAÇÃO'
+    });
+    FASES.forEach((fase,index)=>fase.itens.forEach((_,item)=>{ST.scores['f'+fase.num+'_'+item]=(index+item)%5+1;}));
+    calcularEMostrar(true);
+    return;
+  }
   const codigo=params.get('grupo');
   const turma=params.get('turma');
   if(codigo){
