@@ -647,13 +647,49 @@ function calcularEMostrar(isPreview=false){
   }
   go(4);
   if(isPreview)return;
-  salvarFirebase(fs,bi).catch(error=>{
-    const aviso=document.createElement('p');
-    aviso.className='sc';
-    aviso.textContent='⚠️ Não foi possível registrar a resposta. Verifique a conexão ou a configuração do Firebase e contate a pesquisadora antes de reenviar.';
-    document.getElementById('resultado-area').prepend(aviso);
-    console.error(error);
-  });
+  salvarFirebase(fs,bi);
+  const caixa=document.createElement('div');
+  caixa.id='status-envio';
+  caixa.style.cssText='text-align:center;font-size:13px;color:#8a8a8a;margin:10px 0';
+  caixa.textContent='Salvando a sua resposta...';
+  document.getElementById('resultado-area').prepend(caixa);
+  enviarPendente(caixa);
+}
+
+// ---- Garantia de gravação: a resposta fica guardada neste aparelho até o servidor confirmar ----
+const CHAVE_PENDENTE='fc_burnout_pendente';
+function lerPendente(){try{return JSON.parse(localStorage.getItem(CHAVE_PENDENTE)||'null');}catch(e){return null;}}
+function guardarPendente(d){try{localStorage.setItem(CHAVE_PENDENTE,JSON.stringify(d));}catch(e){}}
+function limparPendente(){try{localStorage.removeItem(CHAVE_PENDENTE);}catch(e){}}
+function esperar(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function gravarResposta(data){
+  await fcEnsureAnonymous();
+  const uid=fcAuth.currentUser.uid;
+  const response=await fcFetch(COL+'/'+uid+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  if(!response.ok){const e=new Error('recusado '+response.status);e.status=response.status;throw e;}
+}
+
+// Tenta até 4 vezes sozinha; se não der, mostra o aviso com o botão de tentar de novo.
+async function enviarPendente(caixa){
+  const data=lerPendente();
+  if(!data){caixa.textContent='';return true;}
+  let ultimo=null;
+  for(let i=0;i<4;i++){
+    try{await gravarResposta(data);limparPendente();caixa.style.cssText='text-align:center;font-size:13px;color:#047857;margin:10px 0';caixa.textContent='Sua resposta foi salva com segurança.';return true;}
+    catch(e){ultimo=e;if(e&&(e.status===401||e.status===403))break;await esperar(1500*(i+1));}
+  }
+  const recusado=ultimo&&(ultimo.status===401||ultimo.status===403);
+  caixa.style.cssText='text-align:center;font-size:14px;color:#9A3412;background:#FFF7ED;border:1px solid #FB923C;border-radius:12px;padding:12px;margin:12px 0';
+  caixa.textContent=recusado
+    ?'ATENÇÃO: a sua resposta NÃO foi registrada. Confira se o código do grupo está certo e avise a pesquisadora. Sua resposta continua guardada neste aparelho.'
+    :'ATENÇÃO: a sua resposta ainda NÃO foi enviada. Confira a internet e toque no botão abaixo. Ela continua guardada neste aparelho.';
+  const b=document.createElement('button');
+  b.textContent='Tentar enviar de novo';
+  b.style.cssText='display:block;margin:10px auto 0;padding:12px 22px;border:0;border-radius:12px;background:#B91C1C;color:#fff;font-size:16px;font-weight:700;cursor:pointer';
+  b.onclick=async()=>{b.disabled=true;b.textContent='Enviando...';const ok=await enviarPendente(caixa);if(!ok){}};
+  caixa.appendChild(b);
+  return false;
 }
 
 function shareWA(){
@@ -674,11 +710,8 @@ function shareWA(){
 const COL='facunicamps-burnout';
 
 async function salvarFirebase(fs,bi){
-  await fcEnsureAnonymous();
   const data={nome:ST.nome,idade:ST.idade,genero:ST.genero,estado_civil:ST.estado_civil,vinculo:ST.vinculo,curso:ST.curso||'',tipo_trabalho:ST.tipo_trabalho,profissao:ST.profissao||'',zap:ST.zap,codigo:ST.codigo,risco:bi.nivel,faseAtiva:bi.fa,mediaGeral:Math.round(bi.mg),fases:Object.fromEntries(fs.map(f=>['f'+f.fase.num,f.pct])),ts:new Date().toISOString()};
-  const uid=fcAuth.currentUser.uid;
-  const response=await fcFetch(COL+'/'+uid+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(!response.ok)throw new Error('Firebase recusou a gravação da resposta.');
+  guardarPendente(data);
 }
 
 function abrirRelatorioGrupo(){
@@ -722,6 +755,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   try{
     if(!window.fcConfigured)throw new Error('Configuração Firebase ausente.');
     await fcEnsureAnonymous();
+    if(lerPendente()){const c=document.createElement('div');c.style.cssText='text-align:center;font-size:13px;color:#8a8a8a;margin:10px 0';document.querySelector('.main').prepend(c);c.textContent='Enviando uma resposta que ficou pendente...';enviarPendente(c);}
   }catch(error){
     const notice=document.createElement('p');
     notice.className='sc';
