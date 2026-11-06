@@ -531,6 +531,7 @@ function renderListaGrupos(){
           <button class="btn btn-sm btn-pri" onclick="verRelatorio('${codigo}')">📊 Ver Relatório</button>
           <button class="btn btn-sm btn-green" onclick="copiarCodigo('${codigo}')">📋 Copiar Código</button>
           <button class="btn btn-sm btn-wa" onclick="compartilharWhats('${codigo}')">💬 Compartilhar</button>
+          <button class="btn btn-sm btn-pri" onclick="editarLider('${g._id}')">✏️ Líder</button>
           <button class="btn btn-sm btn-del" onclick="deletarGrupo('${g._id}','${codigo}')">🗑️</button>
         </div>
       </div>`;
@@ -871,6 +872,29 @@ function compartilharWhats(cod){
   const zapL=String(grupo?.zapLider||'').replace(/\D/g,'');
   const numL=zapL?(zapL.startsWith('55')?zapL:'55'+zapL):'';
   window.open('https://wa.me/'+numL+'?text='+msg,'_blank');
+}
+// Edita o líder do grupo (nome e WhatsApp) e a lista de integrantes, sem precisar recriar o grupo.
+async function editarLider(id){
+  const g=todosGrupos.find(x=>x._id===id);
+  if(!g){toast('Grupo não encontrado.');return;}
+  const nome=prompt('Nome do líder do grupo:',g.nomeLider||'');
+  if(nome===null)return;
+  const zapAtual=g.zapLider||'';
+  const zapTxt=prompt('WhatsApp do líder (com DDD):',zapAtual);
+  if(zapTxt===null)return;
+  const zap=String(zapTxt).replace(/\D/g,'');
+  if(zap.length<10||zap.length>13){toast('⚠️ WhatsApp inválido. Use DDD + número.');return;}
+  const lista=prompt('Integrantes (separe por ponto e vírgula):',(g.integrantes||[]).join('; '));
+  if(lista===null)return;
+  const integrantes=String(lista).split(';').map(x=>x.trim()).filter(Boolean);
+  const novo=Object.assign({},g);delete novo._id;
+  novo.nomeLider=nome.trim();novo.zapLider=zap;novo.integrantes=integrantes;
+  try{
+    const r=await fcFetch(COL_GRUPOS+'/'+encodeURIComponent(id)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(novo)});
+    if(!r.ok){toast('❌ Não foi possível salvar (erro '+r.status+').');return;}
+    toast('✅ Líder atualizado.');
+    await carregarTudo();
+  }catch(e){toast('❌ Erro ao salvar.');}
 }
 async function deletarGrupo(id,cod){
   if(!confirm('Excluir o grupo '+cod+'? As respostas dos alunos não serão apagadas.'))return;
