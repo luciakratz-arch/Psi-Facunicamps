@@ -323,7 +323,9 @@ async function salvarGrupo(){
   const nome=document.getElementById('ng-nome').value.trim();
   const zap=document.getElementById('ng-zap').value.trim().replace(/\D/g,'');
   const integrantes=getIntegrantes();
+  const publicoAlvo=(document.getElementById('ng-publico')||{value:''}).value.trim();
   if(!nome){toast('⚠️ Informe o nome do grupo.');return;}
+  if(!publicoAlvo){toast('⚠️ Informe o público-alvo da pesquisa.');return;}
   if(!zap||zap.length<10){toast('⚠️ Informe o WhatsApp do líder com DDD.');return;}
   if(integrantes.length<2){toast('⚠️ Adicione pelo menos 2 integrantes.');return;}
   const btn=document.getElementById('btn-salvar');
@@ -334,6 +336,7 @@ async function salvarGrupo(){
     codigoGrupo:codigoGerado,
     codigoTurma:turmaAtual.codigo,
     nomeGrupo:nome,
+    publico:publicoAlvo,
     zapLider:zap,
     integrantes,
     curso:turmaAtual.curso||'',
@@ -348,6 +351,7 @@ async function salvarGrupo(){
     await fcEnsureAnonymous();
     const resp=await fcFetch(COL_GRUPOS+'/'+encodeURIComponent(data.codigoGrupo)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!resp.ok)throw new Error('O Firebase recusou o cadastro do grupo.');
+    try{await fcFetch('facunicamps-progresso/'+encodeURIComponent(data.codigoGrupo)+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({meta:Math.max(30,10*integrantes.length),integrantes:integrantes.length})});}catch(e){}
     mostrarSucesso(data);
     window.grupoCadastrado=data;
   }catch(e){

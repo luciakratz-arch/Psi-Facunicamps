@@ -373,6 +373,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <p>Informe o código fornecido pelo(a) professor(a) ou coordenador(a). Ele vincula sua resposta ao grupo para o relatório coletivo.</p>
     <input class="inp inp-codigo" id="codigo" type="text" maxlength="40" placeholder="Ex: 26-2-PSITRAB-MAT-GXXXXXXXXXXXX" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
     <div id="grupo-link-info" style="display:none;font-size:12px;color:var(--ts);margin-top:8px"></div>
+    <div id="progresso-grupo" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:#EAF0FB;font-size:13px;color:#1c2540;line-height:1.5"></div>
   </div>
   <div class="btn-row">
     <button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button>
@@ -665,10 +666,37 @@ function guardarPendente(d){const chave=novaChave();d.envioId=chave;const l=lerP
 function removerPendente(chave){gravarLista(lerPendente().filter(x=>x.chave!==chave));}
 function esperar(ms){return new Promise(r=>setTimeout(r,ms));}
 
+
+// Mostra a meta do grupo, quantas respostas já foram e quantas faltam (dados somados e públicos; ninguém vê respostas de outras pessoas).
+async function mostrarProgresso(cod){
+  const caixa=document.getElementById('progresso-grupo');if(!caixa)return;
+  cod=String(cod||'').trim().toUpperCase();
+  if(cod.length<8){caixa.style.display='none';return;}
+  try{
+    await fcEnsureAnonymous();
+    const r=await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'.json');
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    if(!d||!d.meta){caixa.style.display='none';return;}
+    const feitas=d.envios?Object.keys(d.envios).length:0,meta=Number(d.meta),falta=Math.max(meta-feitas,0),integ=Math.max(Number(d.integrantes)||1,1),porInteg=Math.ceil(meta/integ);
+    caixa.style.display='block';
+    caixa.innerHTML='<strong>Meta do grupo: '+meta+' respostas</strong> ('+porInteg+' por integrante).<br>Já feitas: <strong>'+feitas+'</strong> · Faltam: <strong>'+falta+'</strong>'+(falta===0?' &#127881; Meta atingida!':'');
+  }catch(e){caixa.style.display='none';}
+}
+document.addEventListener('DOMContentLoaded',function(){
+  const el=document.getElementById('codigo');if(!el)return;
+  let t=null;
+  const chamar=function(){clearTimeout(t);t=setTimeout(function(){mostrarProgresso(el.value);},500);};
+  el.addEventListener('input',chamar);el.addEventListener('change',chamar);
+  setTimeout(function(){if(el.value)mostrarProgresso(el.value);},1500);
+});
+
 async function gravarResposta(item){
   await fcEnsureAnonymous();
   const response=await fcFetch(COL+'/'+item.chave+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(item.data)});
   if(!response.ok){const e=new Error('recusado '+response.status);e.status=response.status;throw e;}
+  try{const cod=String((item.data&&item.data.codigo)||'').toUpperCase();if(cod)await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'/envios/'+item.chave+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:'true'});}catch(e){}
+  try{mostrarProgresso((item.data&&item.data.codigo)||'');}catch(e){}
 }
 
 // Tenta até 4 vezes sozinha; se não der, mostra o aviso com o botão de tentar de novo.

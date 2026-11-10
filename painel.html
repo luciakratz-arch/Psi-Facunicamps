@@ -401,9 +401,17 @@ async function carregarTudo(){
     todasTurmas=dataT?Object.entries(dataT).map(([k,v])=>({...v,codigo:v.codigo||k})):[];
     todosGrupos=dataG?Object.entries(dataG).map(([k,v])=>({...v,codigo:v.codigo||v.codigoGrupo,codigoGrupo:v.codigoGrupo||v.codigo,_id:k})):[];
     todasRespostas=dataR?Object.values(dataR):[];
+    window.chavesRespostas=dataR?Object.entries(dataR).map(([k,v])=>({k,codigo:v&&v.codigo})):[];
     renderListaGrupos();
+    sincronizarProgresso().catch(()=>{});
   }catch(e){toast('❌ Erro ao carregar dados. Verifique a autenticação e as regras do Firebase.');throw e;}
 }
+
+
+// ---- META DE RESPOSTAS (regra da Dra. Lucia): mínimo de 30 por grupo e 10 por integrante; com 2 integrantes a meta é 30 (15 cada) ----
+function metaDoGrupo(g){const n=Array.isArray(g&&g.integrantes)?g.integrantes.length:0;return Math.max(30,10*Math.max(n,1));}
+function metaPorIntegrante(g){const n=Array.isArray(g&&g.integrantes)&&g.integrantes.length?g.integrantes.length:1;return Math.ceil(metaDoGrupo(g)/n);}
+function publicoDoGrupo(g){return String((g&&(g.publico||g.publicoAlvo))||'').trim();}
 
 // ---- GERAR CÓDIGO ----
 function gerarCodigo(){
@@ -494,7 +502,7 @@ function renderListaGrupos(){
   turmasOrdenadas.forEach(chave=>{
     const turmaGrupos=porTurma[chave].grupos.sort((a,b)=>b.ts-a.ts);
     html+=`<div style="margin-bottom:6px;padding:8px 12px;background:var(--bd);border-radius:10px;display:flex;align-items:center;gap:8px">
-      <span style="font-family:var(--ff1);font-weight:800;font-size:13px;color:#fff;letter-spacing:1px">🎓 ${escaparHtml(chave)}</span>
+      <span style="font-family:var(--ff1);font-weight:800;font-size:13px;color:#fff;letter-spacing:1px">🎓 ${escaparHtml(chave)}</span><button class="btn btn-sm btn-sec" style="margin-left:auto" onclick="verRelatorioTurma('${escaparHtml(chave)}')">📑 Relatório da turma</button>
       <span style="font-size:11px;color:rgba(255,255,255,.6)">${turmaGrupos.length} grupo${turmaGrupos.length!==1?'s':''}${porTurma[chave].turma?' · '+escaparHtml(porTurma[chave].turma.turnoNome||'')+(porTurma[chave].turma.semestre?' · '+escaparHtml(porTurma[chave].turma.semestre)+'º semestre':''):''}</span>
     </div>`;
     if(turmaGrupos.length===0){
@@ -516,13 +524,14 @@ function renderListaGrupos(){
               &nbsp;·&nbsp;${escaparHtml(g.publicoAlvo||g.publico||'—')}&nbsp;·&nbsp;Criado em ${escaparHtml(dataCriacao)}
             </div>
             <div class="grupo-meta" style="margin-top:6px">
+              <strong>Meta:</strong> ${metaDoGrupo(g)} respostas (${metaPorIntegrante(g)} por integrante) · faltam ${Math.max(metaDoGrupo(g)-n,0)}<br>
               <strong>Líder:</strong> ${escaparHtml(g.nomeLider||'—')}${g.zapLider?' · '+escaparHtml(g.zapLider):' · <span style="color:#C0392B">sem WhatsApp</span>'}<br>
               <strong>Integrantes${Array.isArray(g.integrantes)?' ('+g.integrantes.length+')':''}:</strong> ${Array.isArray(g.integrantes)&&g.integrantes.length?g.integrantes.map(escaparHtml).join(', '):'<span style="color:#9CA3AF">não informados</span>'}
             </div>
           </div>
         </div>
         <div class="grupo-stats">
-          <div class="grupo-stat"><div class="grupo-stat-num">${n}</div><div class="grupo-stat-lbl">Respostas</div></div>
+          <div class="grupo-stat"><div class="grupo-stat-num">${n}/${metaDoGrupo(g)}</div><div class="grupo-stat-lbl">Respostas / meta</div></div>
           <div class="grupo-stat"><div class="grupo-stat-num green">${dist.ok}</div><div class="grupo-stat-lbl">Baixo risco</div></div>
           <div class="grupo-stat"><div class="grupo-stat-num" style="color:#E67E22">${dist.mod}</div><div class="grupo-stat-lbl">Moderado</div></div>
           <div class="grupo-stat"><div class="grupo-stat-num red">${dist.hi}</div><div class="grupo-stat-lbl">Alto risco</div></div>
@@ -582,13 +591,13 @@ function renderResumoPublico(grupo,resps){
     const cor=fase.pct>=70?'#C0392B':fase.pct>=45?'#E67E22':'#27AE60';
     return`<div class="rel-row"><span>F${i+1}</span><span>${escapeHtml(fase.nome)}</span><div class="rel-row-bar-wrap"><div class="rel-row-bar" style="width:${fase.pct}%;background:${cor}"></div></div><strong>${fase.pct}%</strong></div>`;
   }).join('');
-  const podeCompartilhar=n>=10;
+  const metaGrupo=metaDoGrupo(grupo);const podeCompartilhar=n>=metaGrupo;
   el.innerHTML=`<button class="btn btn-ghost" onclick="aba('grupos')">← Voltar aos grupos</button>
     <div id="relatorio-para-pdf">
       <div class="rel-hero"><h2>Resumo científico descritivo — ${label}</h2><p>${escapeHtml(codigo)} · Turma ${turma} · ${n} respostas válidas</p></div>
       <div class="sc"><strong>Metodologia.</strong> Análise descritiva das respostas ao questionário de 12 fases, com três itens por fase e escala de autorrelato de cinco pontos. Os percentuais apresentados são médias por fase nesta amostra; não são diagnóstico clínico nem inferência sobre outras populações.</div>
-      <div class="sc"><div class="sc-ttl">Objetivo</div><p>Descrever indicadores autorrelatados associados às fases do burnout entre estudantes de Psicologia do Trabalho da Facunicamps, considerando as respostas dos participantes deste grupo.</p></div>
-      <div class="sc"><div class="sc-ttl">Público-alvo</div><p>Estudantes matriculados em Psicologia do Trabalho — Facunicamps, turma ${escapeHtml(turma)}, turno ${escapeHtml(grupo.turnoNome||'não informado')}. Este resultado refere-se somente aos participantes que responderam ao questionário neste grupo.</p></div>
+      <div class="sc"><div class="sc-ttl">Objetivo</div><p>Descrever indicadores autorrelatados associados às fases do burnout no público-alvo definido pelo grupo (${escapeHtml(publicoDoGrupo(grupo)||'não informado no cadastro')}), considerando as respostas dos participantes deste grupo.</p></div>
+      <div class="sc"><div class="sc-ttl">Público-alvo</div><p>${escapeHtml(publicoDoGrupo(grupo)||'Público-alvo não informado no cadastro do grupo.')} Pesquisa realizada por estudantes de Psicologia do Trabalho — Facunicamps, turma ${escapeHtml(turma)}, turno ${escapeHtml(grupo.turnoNome||'não informado')}. Este resultado refere-se somente aos participantes que responderam ao questionário neste grupo.</p></div>
       <div class="sc"><div class="sc-ttl">Metodologia</div><p>Estudo exploratório e descritivo, de abordagem quantitativa, com participação voluntária e amostra por conveniência. Foi utilizado questionário on-line inspirado nas 12 fases atribuídas ao modelo de Freudenberger e North, com 36 itens (três por fase) respondidos em escala de autorrelato de cinco pontos. Calculam-se percentuais médios por fase e uma distribuição descritiva das faixas do instrumento. Não foram realizados testes de hipótese nem inferências para além desta amostra.</p></div>
       ${podeCompartilhar?`<div class="rel-stats"><div class="rel-stat"><div class="rel-stat-num">${n}</div><div class="rel-stat-lbl">Respostas</div></div><div class="rel-stat"><div class="rel-stat-num">${distribuicao.baixo}</div><div class="rel-stat-lbl">Faixa inicial</div></div><div class="rel-stat"><div class="rel-stat-num">${distribuicao.moderado+distribuicao.elevado}</div><div class="rel-stat-lbl">Faixas de atenção</div></div></div>
       <div class="sc"><div class="sc-ttl">Média descritiva por fase</div>${faseRows}</div>
@@ -596,7 +605,7 @@ function renderResumoPublico(grupo,resps){
       <div class="sc"><div class="sc-ttl">Síntese dos resultados</div><p>As maiores médias descritivas foram observadas nas fases ${maioresFases.map(fase=>escapeHtml(fase.nome)+' ('+fase.pct+'%)').join(', ')}. Na classificação descritiva do instrumento, ${distribuicao.baixo} de ${n} respostas ficaram na faixa inicial, ${distribuicao.moderado} na intermediária e ${distribuicao.elevado} na elevada. Esses dados descrevem exclusivamente as respostas obtidas neste grupo.</p></div>
       <div class="sc"><div class="sc-ttl">Considerações finais</div><p>Os achados oferecem um panorama inicial para reflexão e discussão acadêmica sobre saúde mental e condições de estudo. Por se tratar de autorrelato, amostra por conveniência e análise descritiva de um grupo, os resultados não permitem estabelecer diagnóstico, causalidade ou generalização para outros estudantes. Recomenda-se interpretar os resultados coletivos com acompanhamento docente e sem identificar participantes.</p></div>
       <div class="sc">Relatório agregado. Não contém nomes, telefones nem respostas individuais. Gerado em ${new Date().toLocaleDateString('pt-BR')}.</div>`
-      :`<div class="sc">O relatório compartilhável será liberado quando o grupo atingir 10 respostas. No momento: ${n}/10. Dados individuais não são exibidos.</div>`}
+      :`<div class="sc">O relatório compartilhável será liberado quando o grupo atingir a meta de ${metaGrupo} respostas (mínimo de 30 por grupo e 10 por integrante). No momento: ${n}/${metaGrupo}; faltam ${Math.max(metaGrupo-n,0)}. Dados individuais não são exibidos.</div>`}
     </div>
     <div class="btn-row">
       ${podeCompartilhar?`<button class="btn btn-pri" onclick="publicarRelatorio().catch(mostrarErroRelatorio)">🔗 Gerar link do relatório</button><button class="btn btn-sec" onclick="imprimirRelatorio()">📄 Salvar PDF</button><button class="btn btn-wa" id="btn-whats-rel" onclick="enviarRelatorioWhats()" disabled>💬 WhatsApp</button>`:''}
@@ -610,7 +619,7 @@ function renderResumoPublico(grupo,resps){
 async function publicarRelatorio(){
   const grupo=window.grupoRelatorioAtual;
   const respostas=window.respostasRelatorioAtual||[];
-  if(!grupo||respostas.length<10){toast('O relatório só pode ser publicado com pelo menos 10 respostas.');return;}
+  if(!grupo||respostas.length<metaDoGrupo(grupo)){toast('O relatório só pode ser publicado quando o grupo atingir a meta de '+(grupo?metaDoGrupo(grupo):30)+' respostas.');return;}
   const codigo=grupo.codigoGrupo||grupo.codigo;
   const fases=FASES_NOMES.map((nome,i)=>({
     nome,
@@ -632,6 +641,8 @@ async function publicarRelatorio(){
     curso:grupo.curso||'Psicologia do Trabalho',
     turno:grupo.turnoNome||'',
     respostas:respostas.length,
+    meta:metaDoGrupo(grupo),
+    publicoAlvo:publicoDoGrupo(grupo),
     fases,
     maioresFases,
     distribuicao,
@@ -650,6 +661,53 @@ async function publicarRelatorio(){
   status.appendChild(link);
   document.getElementById('btn-whats-rel').disabled=false;
   toast('✅ Link do relatório publicado.');
+}
+
+
+// Publica o progresso de cada grupo (meta e envios), para os alunos verem quantas respostas já foram e quantas faltam, sem expor dados.
+async function sincronizarProgresso(){
+  for(const g of todosGrupos){
+    const cod=g.codigoGrupo||g.codigo; if(!cod)continue;
+    const envios={};(window.chavesRespostas||[]).filter(x=>x.codigo===cod).forEach(x=>{envios[x.k]=true;});
+    const corpo={meta:metaDoGrupo(g),integrantes:Math.max(Array.isArray(g.integrantes)?g.integrantes.length:1,1)};
+    await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign(corpo,Object.keys(envios).length?{envios}:{}))});
+  }
+}
+
+// ---- RELATÓRIO DA TURMA: grupos cadastrados, integrantes, público-alvo e andamento (sem resultados individuais) ----
+function verRelatorioTurma(codigoTurma){
+  const escapa=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const turma=todasTurmas.find(t=>t.codigo===codigoTurma)||{};
+  const grupos=todosGrupos.filter(g=>(g.codigoTurma||'—')===codigoTurma).sort((a,b)=>String(a.nomeGrupo||'').localeCompare(String(b.nomeGrupo||'')));
+  let totInt=0,totResp=0,liberados=0;
+  const linhas=grupos.map((g,i)=>{
+    const cod=g.codigoGrupo||g.codigo,n=todasRespostas.filter(r=>r.codigo===cod).length,meta=metaDoGrupo(g),integ=Array.isArray(g.integrantes)?g.integrantes:[];
+    totInt+=integ.length;totResp+=n;if(n>=meta)liberados++;
+    const sit=n>=meta?'<span style="color:#1E8449;font-weight:700">Meta atingida</span>':'<span style="color:#B9770E;font-weight:700">Faltam '+(meta-n)+'</span>';
+    return '<tr><td><strong>'+escapa(g.nomeGrupo||cod)+'</strong><br><small style="color:#667">'+escapa(publicoDoGrupo(g)||'público-alvo não informado')+'</small></td><td>'+escapa(g.nomeLider||'—')+'</td><td>'+(integ.length?integ.map(escapa).join(', '):'—')+'</td><td>'+n+' / '+meta+'</td><td>'+sit+'</td><td class="sem-imprimir"><button class="btn btn-sm btn-wa" onclick="avisarLider('+i+',\''+escapa(codigoTurma)+'\')">💬 Avisar líder</button></td></tr>';
+  }).join('');
+  window.gruposTurmaAtual=grupos;
+  ['grupos','novo','geral'].forEach(a=>document.getElementById('aba-'+a).style.display='none');
+  document.getElementById('tela-relatorio').style.display='block';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('rel-area').innerHTML=`<button class="btn btn-ghost" onclick="aba('grupos')">← Voltar aos grupos</button>
+    <div id="relatorio-para-pdf">
+      <div class="rel-hero"><h2>Relatório da turma ${escapa(codigoTurma)}</h2><p>${escapa(turma.curso||'Psicologia do Trabalho')} · ${escapa(turma.turnoNome||'')}${turma.semestre?' · '+escapa(turma.semestre)+'º semestre':''} · gerado em ${new Date().toLocaleDateString('pt-BR')}</p></div>
+      <div class="rel-stats"><div class="rel-stat"><div class="rel-stat-num">${grupos.length}</div><div class="rel-stat-lbl">Grupos</div></div><div class="rel-stat"><div class="rel-stat-num">${totInt}</div><div class="rel-stat-lbl">Integrantes</div></div><div class="rel-stat"><div class="rel-stat-num">${totResp}</div><div class="rel-stat-lbl">Respostas</div></div><div class="rel-stat"><div class="rel-stat-num">${liberados}/${grupos.length}</div><div class="rel-stat-lbl">Metas atingidas</div></div></div>
+      <div class="sc"><div class="sc-ttl">Grupos cadastrados e andamento</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#EAF0FB;text-align:left"><th style="padding:8px">Grupo e público-alvo</th><th style="padding:8px">Líder</th><th style="padding:8px">Integrantes</th><th style="padding:8px">Respostas / meta</th><th style="padding:8px">Situação</th><th class="sem-imprimir"></th></tr>${linhas||'<tr><td colspan="6" style="padding:10px">Nenhum grupo cadastrado nesta turma.</td></tr>'}</table></div>
+      <div class="sc">Meta de cada grupo: mínimo de 30 respostas e 10 por integrante (com 2 integrantes, 15 cada). Relatório agregado: não contém respostas individuais nem dados de quem respondeu.</div>
+    </div>
+    <div class="btn-row"><button class="btn btn-sec" onclick="document.title='Turma ${escapa(codigoTurma)}';window.print()">📄 Salvar como PDF</button></div>`;
+}
+
+function avisarLider(i,codigoTurma){
+  const g=(window.gruposTurmaAtual||[])[i];if(!g)return;
+  const cod=g.codigoGrupo||g.codigo,n=todasRespostas.filter(r=>r.codigo===cod).length,meta=metaDoGrupo(g);
+  const zap=String(g.zapLider||'').replace(/\D/g,'');if(!zap){toast('Este grupo não tem WhatsApp do líder.');return;}
+  const num=zap.startsWith('55')?zap:'55'+zap;
+  const msg='Olá'+(g.nomeLider?', '+g.nomeLider:'')+'! Situação do grupo "'+(g.nomeGrupo||cod)+'" no Mapa do Burnout: '+n+' de '+meta+' respostas (faltam '+Math.max(meta-n,0)+'). A meta é de '+metaPorIntegrante(g)+' respostas por integrante. Código do grupo: '+cod;
+  window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank','noopener');
 }
 
 function mostrarErroRelatorio(error){
@@ -887,8 +945,10 @@ async function editarLider(id){
   const lista=prompt('Integrantes (separe por ponto e vírgula):',(g.integrantes||[]).join('; '));
   if(lista===null)return;
   const integrantes=String(lista).split(';').map(x=>x.trim()).filter(Boolean);
+  const publicoTxt=prompt('Público-alvo da pesquisa deste grupo:',publicoDoGrupo(g));
+  if(publicoTxt===null)return;
   const novo=Object.assign({},g);delete novo._id;
-  novo.nomeLider=nome.trim();novo.zapLider=zap;novo.integrantes=integrantes;
+  novo.nomeLider=nome.trim();novo.zapLider=zap;novo.integrantes=integrantes;novo.publico=String(publicoTxt).trim();
   try{
     const r=await fcFetch(COL_GRUPOS+'/'+encodeURIComponent(id)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(novo)});
     if(!r.ok){toast('❌ Não foi possível salvar (erro '+r.status+').');return;}

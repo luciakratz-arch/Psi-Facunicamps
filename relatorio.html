@@ -47,8 +47,8 @@ async function carregar(){
     const response=await fcFetch('facunicamps-relatorios-publicos/'+token+'.json');
     if(!response.ok)throw new Error('Não foi possível carregar o relatório.');
     const data=await response.json();
-    if(!data||Number(data.respostas)<10){
-      status.textContent='Relatório indisponível. São necessárias pelo menos 10 respostas.';
+    if(!data||Number(data.respostas)<Number(data.meta||30)){
+      status.textContent='Relatório indisponível. O grupo ainda não atingiu a meta de respostas.';
       return;
     }
     document.getElementById('title').textContent='Resumo científico descritivo — '+data.nomeGrupo;
@@ -65,8 +65,8 @@ async function carregar(){
       article.append(heading,paragraph);
       section.appendChild(article);
     }
-    addSection('Objetivo','Descrever indicadores autorrelatados associados às fases do burnout entre estudantes de Psicologia do Trabalho da Facunicamps, considerando as respostas dos participantes deste grupo.');
-    addSection('Público-alvo','Estudantes matriculados em Psicologia do Trabalho — Facunicamps, turma '+data.codigoTurma+', turno '+(data.turno||'não informado')+'. Este resultado refere-se somente aos participantes que responderam ao questionário neste grupo.');
+    addSection('Objetivo','Descrever indicadores autorrelatados associados às fases do burnout no público-alvo definido pelo grupo ('+(data.publicoAlvo||'não informado no cadastro')+'), considerando as respostas dos participantes deste grupo.');
+    addSection('Público-alvo',(data.publicoAlvo||'Público-alvo não informado no cadastro do grupo.')+' Pesquisa realizada por estudantes de Psicologia do Trabalho — Facunicamps, turma '+data.codigoTurma+', turno '+(data.turno||'não informado')+'. Este resultado refere-se somente aos participantes que responderam ao questionário neste grupo.');
     addSection('Metodologia','Estudo exploratório e descritivo, de abordagem quantitativa, com participação voluntária e amostra por conveniência. Foi utilizado questionário on-line inspirado nas 12 fases atribuídas ao modelo de Freudenberger e North, com 36 itens (três por fase) respondidos em escala de autorrelato de cinco pontos. Calculam-se percentuais médios por fase e uma distribuição descritiva das faixas do instrumento. Não foram realizados testes de hipótese nem inferências para além desta amostra.');
     const dist=data.distribuicao||{};
     const counts=document.createElement('p');

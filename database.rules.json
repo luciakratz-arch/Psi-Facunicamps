@@ -27,6 +27,26 @@
         ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true",
         ".validate": "newData.hasChildren(['nomeGrupo', 'codigoGrupo', 'codigoTurma', 'respostas', 'fases', 'distribuicao', 'geradoEm'])"
       }
+    },
+    "facunicamps-progresso": {
+      ".read": false,
+      "$codigo": {
+        ".read": true,
+        "meta": {
+          ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || (auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-grupos').child($codigo).exists())",
+          ".validate": "newData.isNumber() && newData.val() >= 30 && newData.val() <= 2000"
+        },
+        "integrantes": {
+          ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || (auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-grupos').child($codigo).exists())",
+          ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 200"
+        },
+        "envios": {
+          "$envio": {
+            ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || (auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-grupos').child($codigo).exists())",
+            ".validate": "newData.val() === true"
+          }
+        }
+      }
     }
   }
 }
