@@ -42,8 +42,10 @@
 </div>
 
 <main id="conteudo" style="display:none">
-  <div class="acoes" style="margin-top:0">
-    <button class="btn" onclick="baixarArquivo()">&#11015; Baixar arquivo para enviar (todas as turmas)</button>
+  <div class="acoes" style="margin-top:0;align-items:center">
+    <label style="font-weight:600;font-size:13px">Turma:</label>
+    <select id="filtro-turma" onchange="render()" style="padding:9px 12px;border-radius:10px;border:1px solid #b9c7e6;font-size:14px;min-width:240px"></select>
+    <button class="btn" onclick="baixarArquivo(document.getElementById('filtro-turma').value)">&#11015; Baixar arquivo desta turma</button>
     <button class="btn sec" onclick="window.print()">&#128424; Imprimir / PDF</button>
   </div>
   <div id="lista"></div>
@@ -67,22 +69,35 @@ function porTurma(){
   grupos.forEach((g,i)=>{const k=g.codigoTurma||'—';if(!m[k])m[k]={turma:null,grupos:[]};m[k].grupos.push({g,i});});
   return Object.keys(m).sort().map(k=>({chave:k,turma:m[k].turma,grupos:m[k].grupos}));
 }
+function integrantesDe(g){const l=Array.isArray(g.integrantes)?g.integrantes:[];return l.length?l.join(', '):'';}
+function preencherFiltro(){
+  const sel=document.getElementById('filtro-turma');const atual=sel.value;
+  const ts=porTurma();
+  sel.innerHTML=ts.map(t=>`<option value="${esc(t.chave)}">${esc(t.chave)}${t.turma&&t.turma.turnoNome?' · '+esc(t.turma.turnoNome):''} (${t.grupos.length} grupo${t.grupos.length!==1?'s':''})</option>`).join('');
+  if(atual&&ts.some(t=>t.chave===atual))sel.value=atual;
+}
 function render(){
-  document.getElementById('lista').innerHTML=porTurma().map(t=>`
-    <div class="turma"><span>🎓 ${esc(t.chave)}${t.turma?' · '+esc(t.turma.turnoNome||'')+(t.turma.semestre?' · '+esc(t.turma.semestre)+'º sem.':''):''}</span><span>${t.grupos.length} grupo(s)</span></div>
-    ${t.grupos.map(({g,i})=>{const cod=g.codigoGrupo||g.codigo,lk=linkDe(g);return `
+  const sel=document.getElementById('filtro-turma');
+  if(!sel.options.length)preencherFiltro();
+  const t=porTurma().find(x=>x.chave===sel.value);
+  if(!t){document.getElementById('lista').innerHTML='<div class="grupo">Nenhuma turma cadastrada.</div>';return;}
+  document.getElementById('lista').innerHTML=`
+    <div class="turma"><span>🎓 Turma ${esc(t.chave)}${t.turma?' · '+esc(t.turma.turnoNome||'')+(t.turma.semestre?' · '+esc(t.turma.semestre)+'º semestre':''):''}</span><span>${t.grupos.length} grupo(s)</span></div>
+    ${t.grupos.map(({g,i})=>{const cod=g.codigoGrupo||g.codigo,lk=linkDe(g),ints=integrantesDe(g);return `
     <div class="grupo"><h3>${esc(g.nomeGrupo||cod)}</h3>
+      <div style="font-size:13px;color:#445;margin-bottom:6px"><strong>Integrantes${Array.isArray(g.integrantes)&&g.integrantes.length?' ('+g.integrantes.length+')':''}:</strong> ${ints?esc(ints):'<span style="color:#999">não informados</span>'}</div>
       <div class="lbl">Link do questionário (com o código já preenchido)</div>
-      <div class="linha"><div class="caixa">${esc(lk)}</div><button class="btn sec" onclick="copiar(grupos[${i}]&&linkDe(grupos[${i}]))">Copiar</button></div>
+      <div class="linha"><div class="caixa">${esc(lk)}</div><button class="btn sec" onclick="copiar(linkDe(grupos[${i}]))">Copiar</button></div>
       <div class="lbl">Só o código do grupo</div>
       <div class="linha"><div class="caixa">${esc(cod)}</div><button class="btn sec" onclick="copiar('${esc(cod)}')">Copiar</button></div>
       <div class="acoes"><button class="btn wa" onclick="zap(${i})">💬 Enviar pelo WhatsApp</button></div>
-    </div>`;}).join('')||'<div class="grupo">Nenhum grupo nesta turma ainda.</div>'}`).join('')||'<div class="grupo">Nenhum grupo cadastrado.</div>';
+    </div>`;}).join('')||'<div class="grupo">Nenhum grupo nesta turma ainda.</div>'}`;
 }
-function baixarArquivo(){
-  const linhas=porTurma().map(t=>`<h2>${esc(t.chave)}</h2>`+(t.grupos.map(({g})=>{const cod=g.codigoGrupo||g.codigo,lk=linkDe(g);return `<div class="g"><b>${esc(g.nomeGrupo||cod)}</b><br>Link: <a href="${esc(lk)}">${esc(lk)}</a><br>Código: <code>${esc(cod)}</code></div>`;}).join('')||'<p>Sem grupos.</p>')).join('');
-  const html='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Links dos grupos — Mapa do Burnout</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:20px auto;padding:0 14px;color:#1c2540}h1{color:#0f2a6b}h2{background:#0f2a6b;color:#fff;padding:8px 12px;border-radius:8px;font-size:15px}.g{border:1px solid #d9e2f3;border-radius:10px;padding:10px 12px;margin:8px 0;word-break:break-all;line-height:1.6}code{background:#eef3fb;padding:2px 6px;border-radius:5px}</style></head><body><h1>Mapa do Burnout — Facunicamps</h1><p>Encontre o seu grupo e use o link (o código já vem preenchido) ou digite o código.</p>'+linhas+'</body></html>';
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download='links-grupos-burnout.html';a.click();
+function baixarArquivo(turmaChave){
+  const ts=porTurma().filter(t=>!turmaChave||t.chave===turmaChave);
+  const linhas=ts.map(t=>`<h2>Turma ${esc(t.chave)}${t.turma&&t.turma.turnoNome?' · '+esc(t.turma.turnoNome):''}</h2>`+(t.grupos.map(({g})=>{const cod=g.codigoGrupo||g.codigo,lk=linkDe(g),ints=integrantesDe(g);return `<div class="g"><b>${esc(g.nomeGrupo||cod)}</b>${ints?'<br><small>Integrantes: '+esc(ints)+'</small>':''}<br>Link: <a href="${esc(lk)}">${esc(lk)}</a><br>Código: <code>${esc(cod)}</code></div>`;}).join('')||'<p>Sem grupos.</p>')).join('');
+  const html='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Links dos grupos — Mapa do Burnout</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:20px auto;padding:0 14px;color:#1c2540}h1{color:#0f2a6b}h2{background:#0f2a6b;color:#fff;padding:8px 12px;border-radius:8px;font-size:15px}.g{border:1px solid #d9e2f3;border-radius:10px;padding:10px 12px;margin:8px 0;word-break:break-all;line-height:1.6}code{background:#eef3fb;padding:2px 6px;border-radius:5px}</style></head><body><h1>Mapa do Burnout — Facunicamps</h1><p>Encontre o seu grupo (pelo nome ou pelos integrantes) e use o link: o código já vem preenchido. Se preferir, digite o código.</p>'+linhas+'</body></html>';
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download='links-burnout-'+String(turmaChave||'todas').replace(/[^A-Za-z0-9-]/g,'')+'.html';a.click();
 }
 async function entrar(){
   const erro=document.getElementById('erro');erro.style.display='none';
