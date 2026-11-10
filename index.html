@@ -683,7 +683,8 @@ async function mostrarProgresso(cod){
     if(!d||!d.meta){esconder();return;}
     const feitas=d.envios?Object.keys(d.envios).length:0,meta=Number(d.meta),falta=Math.max(meta-feitas,0),integ=Math.max(Number(d.integrantes)||1,1),porInteg=Math.ceil(meta/integ);
     const txt='<strong>Meta do grupo: '+meta+' respostas</strong> ('+porInteg+' por integrante).<br>Já feitas: <strong>'+feitas+'</strong> · Faltam: <strong>'+falta+'</strong>'+(falta===0?' &#127881; Meta atingida!':'');
-    caixas.forEach(function(c){c.style.display='block';c.innerHTML=txt;});
+    const botao=d.relatorio&&/^[a-f0-9]{20,80}$/.test(String(d.relatorio))?'<br><a href="relatorio.html?token='+d.relatorio+'" target="_blank" rel="noopener" class="btn btn-pri" style="display:inline-block;margin-top:8px;text-decoration:none">&#128196; Ver relatório do grupo</a>':'';
+    caixas.forEach(function(c){c.style.display='block';c.innerHTML=txt+botao;});
   }catch(e){esconder();}
 }
 document.addEventListener('DOMContentLoaded',function(){

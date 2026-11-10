@@ -650,6 +650,7 @@ async function publicarRelatorio(){
   };
   const response=await fcFetch(COL_PUBLIC+'/'+token+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(publicReport)});
   if(!response.ok)throw new Error('O Firebase recusou a publicação do relatório.');
+  try{await fcFetch('facunicamps-progresso/'+encodeURIComponent(codigo)+'/relatorio.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(token)});}catch(e){}
   window.relatorioCompartilhado=new URL('relatorio.html?token='+token,location.href).href;
   const status=document.getElementById('status-relatorio');
   status.textContent='Link publicado. Qualquer pessoa com o link poderá ver somente o resumo agregado, sem dados pessoais: ';
