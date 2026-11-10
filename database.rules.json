@@ -43,12 +43,18 @@
         "envios": {
           "$envio": {
             ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || (auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-grupos').child($codigo).exists())",
-            ".validate": "newData.val() === true"
+            ".validate": "newData.val() === true || (newData.isString() && newData.val().length <= 80)"
           }
         },
         "relatorio": {
           ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true",
           ".validate": "newData.isString() && newData.val().length <= 80"
+        },
+        "nomes": {
+          ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || (auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-grupos').child($codigo).exists())",
+          "$i": {
+            ".validate": "newData.isString() && newData.val().length <= 80"
+          }
         }
       }
     }

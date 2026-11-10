@@ -670,7 +670,7 @@ async function sincronizarProgresso(){
   for(const g of todosGrupos){
     const cod=g.codigoGrupo||g.codigo; if(!cod)continue;
     const envios={};(window.chavesRespostas||[]).filter(x=>x.codigo===cod).forEach(x=>{envios[x.k]=true;});
-    const corpo={meta:metaDoGrupo(g),integrantes:Math.max(Array.isArray(g.integrantes)?g.integrantes.length:1,1)};
+    const corpo={meta:metaDoGrupo(g),integrantes:Math.max(Array.isArray(g.integrantes)?g.integrantes.length:1,1),nomes:(Array.isArray(g.integrantes)?g.integrantes:[]).map(x=>String(x).slice(0,80))};
     await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign(corpo,Object.keys(envios).length?{envios}:{}))});
   }
 }

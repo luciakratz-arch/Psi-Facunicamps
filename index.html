@@ -208,7 +208,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <button class="btn btn-sec" onclick="verPreviaResultado()">Ver prévia do resultado</button>
   </div>
   <div style="margin-top:16px;text-align:center">
-    <p style="font-size:12px;color:var(--ts);text-align:center;margin-top:12px">O relatório agregado do grupo é compartilhado pela professora quando o grupo atinge a meta de respostas (mínimo de 30 por grupo e 10 por integrante).</p>
+    <p style="font-size:12px;color:var(--ts);text-align:center;margin-top:12px">Meta de cada grupo: mínimo de 30 respostas e 10 por integrante. Você acompanha a sua meta e a do grupo ao digitar o código.</p>
   </div>
 </div>
 
@@ -373,6 +373,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <p>Informe o código fornecido pelo(a) professor(a) ou coordenador(a). Ele vincula sua resposta ao grupo para o relatório coletivo.</p>
     <input class="inp inp-codigo" id="codigo" type="text" maxlength="40" placeholder="Ex: 26-2-PSITRAB-MAT-GXXXXXXXXXXXX" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
     <div id="grupo-link-info" style="display:none;font-size:12px;color:var(--ts);margin-top:8px"></div>
+    <div id="aplicador-box" style="display:none;margin-top:10px"><label class="lbl">&#128100; Quem é você no grupo? *</label><select class="inp" id="aplicador"><option value="">Escolha o seu nome</option></select></div>
     <div id="progresso-grupo" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:#EAF0FB;font-size:13px;color:#1c2540;line-height:1.5"></div>
   </div>
   <div class="btn-row">
@@ -401,7 +402,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 
 <!-- S5: Acesso ao relatório do grupo -->
 <div class="step" id="s5">
-  <div class="sc"><h2>Relatório agregado</h2><p>O link privado do relatório é enviado ao líder após a liberação pela pesquisadora. O grupo precisa atingir a meta de respostas (mínimo de 30 por grupo e 10 por integrante).</p><button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button></div>
+  <div class="sc"><h2>Relatório agregado</h2><p>O relatório do grupo fica disponível quando a meta de respostas é atingida (mínimo de 30 por grupo e 10 por integrante).</p><button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button></div>
 </div>
 
 <!-- S6: Relatório do grupo (dados) -->
@@ -559,6 +560,7 @@ function valStep2(){
   ST.tipo_trabalho=tt==='outro-trab'?document.getElementById('outro-trab').value.trim():tt;
   ST.profissao=document.getElementById('profissao').value.trim();
   ST.zap=z;ST.codigo=c.toUpperCase();
+  {const sel=document.getElementById('aplicador');if(sel&&sel.options.length>1&&!sel.value){alert('Escolha o seu nome em "Quem é você no grupo?" para contar a sua meta.');return;}ST.aplicador=sel?sel.value:'';try{if(ST.aplicador)localStorage.setItem('bm_aplicador_'+ST.codigo,ST.aplicador);}catch(e){}}
   renderFases();
   go(3);
 }
@@ -625,7 +627,8 @@ function calcularEMostrar(isPreview=false){
   else rec='&#128154; Você está em um bom momento. Continue investindo em equilíbrio entre vida pessoal e obrigações.';
   html+='<div class="sc" style="border-left:4px solid var(--bm)"><div class="sc-ttl">&#128172; Recomendação</div><div style="font-size:14px;color:var(--txt);line-height:1.65">'+rec+'</div></div>';
   html+='<div class="share-sec"><h3>&#128242; Compartilhe</h3><p>O WhatsApp abrirá com um resumo do seu resultado. Você confirma o envio no aplicativo.</p><div class="share-btns"><button class="btn btn-wa" onclick="shareWA()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Enviar meu resultado pelo WhatsApp</button>';
-  html+='<div id="progresso-grupo-res" style="display:none;margin:10px 0;padding:10px 12px;border-radius:10px;background:#EAF0FB;font-size:13px;color:#1c2540;line-height:1.5;text-align:center"></div>';
+  html+='<div id="progresso-grupo-res" style="'+(isPreview?'display:block':'display:none')+';margin:10px 0;padding:10px 12px;border-radius:10px;background:#EAF0FB;font-size:13px;color:#1c2540;line-height:1.5;text-align:center">'+(isPreview?'<em>Exemplo (prévia):</em><br><strong>Sua meta: 10 respostas</strong><br>Você já fez: <strong>3</strong> · Faltam para você: <strong>7</strong><br><br><strong>Meta do grupo: 40 respostas</strong><br>Já feitas: <strong>12</strong> · Faltam: <strong>28</strong>':'')+'</div>';
+  html+='<button class="btn btn-ghost" onclick="abrirRelatorioGrupo()">&#128196; Ver relatório do grupo</button>';
   html+='<p style="font-size:12px;color:var(--ts)">Cada resposta feita por você conta para a meta do seu grupo. O relatório do grupo é liberado quando a meta for atingida.</p>';
   html+='<button class="btn btn-sec" onclick="location.reload()">&#128260; Avaliar outra pessoa</button></div>';
   html+='<div style="margin-top:14px"><p style="font-size:12px;color:var(--ts);margin-bottom:6px;font-weight:600">&#128203; Clique na caixa e copie (Ctrl+A &#8594; Ctrl+C):</p><textarea id="txt-resultado" readonly onclick="this.select()" style="width:100%;min-height:160px;padding:12px;border:2px solid var(--bm);border-radius:10px;background:var(--sur2);color:var(--txt);font-family:var(--ff2);font-size:13px;line-height:1.6;resize:vertical;cursor:text"></textarea></div></div>';
@@ -669,24 +672,42 @@ function esperar(ms){return new Promise(r=>setTimeout(r,ms));}
 
 
 // Mostra a meta do grupo, quantas respostas já foram e quantas faltam (dados somados e públicos; ninguém vê respostas de outras pessoas).
+async function lerProgresso(cod){
+  await fcEnsureAnonymous();
+  const r=await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'.json');
+  if(!r.ok)throw new Error();
+  return r.json();
+}
+function montarTextoProgresso(d,meu){
+  const envios=d.envios||{},feitas=Object.keys(envios).length,meta=Number(d.meta),falta=Math.max(meta-feitas,0),integ=Math.max(Number(d.integrantes)||1,1),porInteg=Math.ceil(meta/integ);
+  let t='';
+  if(meu){const fez=Object.values(envios).filter(function(v){return v===meu;}).length;const faltaMeu=Math.max(porInteg-fez,0);
+    t+='<strong>Sua meta: '+porInteg+' respostas</strong><br>Você já fez: <strong>'+fez+'</strong> · Faltam para você: <strong>'+faltaMeu+'</strong>'+(faltaMeu===0?' &#127881;':'')+'<br><br>';}
+  t+='<strong>Meta do grupo: '+meta+' respostas</strong><br>Já feitas: <strong>'+feitas+'</strong> · Faltam: <strong>'+falta+'</strong>'+(falta===0?' &#127881; Meta atingida!':'');
+  return t;
+}
+// Mostra a meta pessoal e a do grupo (dados somados; ninguém vê respostas de outras pessoas).
 async function mostrarProgresso(cod){
   const caixas=['progresso-grupo','progresso-grupo-res'].map(function(i){return document.getElementById(i);}).filter(Boolean);
-  if(!caixas.length)return;
+  const boxNome=document.getElementById('aplicador-box'),sel=document.getElementById('aplicador');
   cod=String(cod||'').trim().toUpperCase();
-  const esconder=function(){caixas.forEach(function(c){c.style.display='none';});};
+  const esconder=function(){caixas.forEach(function(c){c.style.display='none';});if(boxNome)boxNome.style.display='none';};
   if(cod.length<8){esconder();return;}
   try{
-    await fcEnsureAnonymous();
-    const r=await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'.json');
-    if(!r.ok)throw new Error();
-    const d=await r.json();
+    const d=await lerProgresso(cod);
     if(!d||!d.meta){esconder();return;}
-    const feitas=d.envios?Object.keys(d.envios).length:0,meta=Number(d.meta),falta=Math.max(meta-feitas,0),integ=Math.max(Number(d.integrantes)||1,1),porInteg=Math.ceil(meta/integ);
-    const txt='<strong>Meta do grupo: '+meta+' respostas</strong> ('+porInteg+' por integrante).<br>Já feitas: <strong>'+feitas+'</strong> · Faltam: <strong>'+falta+'</strong>'+(falta===0?' &#127881; Meta atingida!':'');
-    const botao=d.relatorio&&/^[a-f0-9]{20,80}$/.test(String(d.relatorio))?'<br><a href="relatorio.html?token='+d.relatorio+'" target="_blank" rel="noopener" class="btn btn-pri" style="display:inline-block;margin-top:8px;text-decoration:none">&#128196; Ver relatório do grupo</a>':'';
-    caixas.forEach(function(c){c.style.display='block';c.innerHTML=txt+botao;});
+    if(sel&&d.nomes){
+      const nomes=Object.values(d.nomes).filter(Boolean);
+      if(nomes.length&&sel.options.length<=1){nomes.forEach(function(n){const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
+        try{const salvo=localStorage.getItem('bm_aplicador_'+cod);if(salvo&&nomes.indexOf(salvo)>=0)sel.value=salvo;}catch(e){}}
+      if(boxNome&&nomes.length)boxNome.style.display='block';
+    }
+    const meu=(window.ST&&ST.aplicador)||(sel&&sel.value)||'';
+    const txt=montarTextoProgresso(d,meu);
+    caixas.forEach(function(c){c.style.display='block';c.innerHTML=txt;});
   }catch(e){esconder();}
 }
+document.addEventListener('change',function(ev){if(ev.target&&ev.target.id==='aplicador'){const el=document.getElementById('codigo');if(el)mostrarProgresso(el.value);}});
 document.addEventListener('DOMContentLoaded',function(){
   const el=document.getElementById('codigo');if(!el)return;
   let t=null;
@@ -699,7 +720,7 @@ async function gravarResposta(item){
   await fcEnsureAnonymous();
   const response=await fcFetch(COL+'/'+item.chave+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(item.data)});
   if(!response.ok){const e=new Error('recusado '+response.status);e.status=response.status;throw e;}
-  try{const cod=String((item.data&&item.data.codigo)||'').toUpperCase();if(cod)await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'/envios/'+item.chave+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:'true'});}catch(e){}
+  try{const cod=String((item.data&&item.data.codigo)||'').toUpperCase();if(cod)await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'/envios/'+item.chave+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify((item.data&&item.data.aplicador)?item.data.aplicador:true)});}catch(e){}
   try{mostrarProgresso((item.data&&item.data.codigo)||'');}catch(e){}
 }
 
@@ -745,12 +766,19 @@ function shareWA(){
 const COL='facunicamps-burnout';
 
 async function salvarFirebase(fs,bi){
-  const data={nome:ST.nome,idade:ST.idade,genero:ST.genero,estado_civil:ST.estado_civil,vinculo:ST.vinculo,curso:ST.curso||'',tipo_trabalho:ST.tipo_trabalho,profissao:ST.profissao||'',zap:ST.zap,codigo:ST.codigo,risco:bi.nivel,faseAtiva:bi.fa,mediaGeral:Math.round(bi.mg),fases:Object.fromEntries(fs.map(f=>['f'+f.fase.num,f.pct])),ts:new Date().toISOString()};
+  const data={aplicador:ST.aplicador||'',nome:ST.nome,idade:ST.idade,genero:ST.genero,estado_civil:ST.estado_civil,vinculo:ST.vinculo,curso:ST.curso||'',tipo_trabalho:ST.tipo_trabalho,profissao:ST.profissao||'',zap:ST.zap,codigo:ST.codigo,risco:bi.nivel,faseAtiva:bi.fa,mediaGeral:Math.round(bi.mg),fases:Object.fromEntries(fs.map(f=>['f'+f.fase.num,f.pct])),ts:new Date().toISOString()};
   guardarPendente(data);
 }
 
-function abrirRelatorioGrupo(){
-  alert('Peça ao líder do grupo o link do relatório agregado. Ele será liberado quando o grupo atingir a meta de respostas.');
+async function abrirRelatorioGrupo(){
+  const cod=String((window.ST&&ST.codigo)||(document.getElementById('codigo')||{}).value||'').trim().toUpperCase();
+  if(!cod){alert('Digite o código do grupo para ver o relatório.');return;}
+  try{
+    const d=await lerProgresso(cod);
+    if(d&&d.relatorio&&/^[a-f0-9]{20,80}$/.test(String(d.relatorio))){window.open('relatorio.html?token='+d.relatorio,'_blank','noopener');return;}
+    const feitas=d&&d.envios?Object.keys(d.envios).length:0,meta=d&&d.meta?Number(d.meta):30;
+    alert('O relatório do grupo ainda não está disponível.\n\nSeu grupo está com '+feitas+' de '+meta+' respostas (faltam '+Math.max(meta-feitas,0)+'). Quando a meta for atingida, o botão passa a abrir o relatório.');
+  }catch(e){alert('Não foi possível consultar o relatório agora. Tente de novo em instantes.');}
 }
 
 async function carregarCodigosDisponiveis(){
