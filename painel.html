@@ -541,6 +541,7 @@ function renderListaGrupos(){
           <button class="btn btn-sm btn-green" onclick="copiarCodigo('${codigo}')">📋 Copiar Código</button>
           <button class="btn btn-sm btn-wa" onclick="compartilharWhats('${codigo}')">💬 Compartilhar</button>
           <button class="btn btn-sm btn-pri" onclick="editarLider('${g._id}')">✏️ Líder</button>
+          <button class="btn btn-sm btn-green" onclick="adicionarMembro('${g._id}')">➕ Membro</button>
           <button class="btn btn-sm btn-del" onclick="deletarGrupo('${g._id}','${codigo}')">🗑️</button>
         </div>
       </div>`;
@@ -933,6 +934,27 @@ function compartilharWhats(cod){
   window.open('https://wa.me/'+numL+'?text='+msg,'_blank');
 }
 // Edita o líder do grupo (nome e WhatsApp) e a lista de integrantes, sem precisar recriar o grupo.
+async function adicionarMembro(id){
+  const g=todosGrupos.find(x=>x._id===id);
+  if(!g){toast('Grupo não encontrado.');return;}
+  const texto=prompt('Nome do novo membro (para vários, separe por ponto e vírgula):','');
+  if(texto===null)return;
+  const novos=String(texto).split(';').map(x=>x.trim()).filter(Boolean);
+  if(!novos.length){toast('Nenhum nome informado.');return;}
+  const atuais=Array.isArray(g.integrantes)?g.integrantes:[];
+  const jaTem=n=>atuais.some(a=>String(a).trim().toLowerCase()===n.toLowerCase());
+  const adicionar=novos.filter(n=>!jaTem(n));
+  if(!adicionar.length){toast('Esse(s) nome(s) já está(ão) no grupo.');return;}
+  const novo=Object.assign({},g);delete novo._id;
+  novo.integrantes=atuais.concat(adicionar);
+  try{
+    const r=await fcFetch(COL_GRUPOS+'/'+encodeURIComponent(id)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(novo)});
+    if(!r.ok){toast('❌ Não foi possível salvar (erro '+r.status+').');return;}
+    toast('✅ '+adicionar.length+' membro(s) adicionado(s). Nova meta do grupo: '+metaDoGrupo(novo)+' respostas.');
+    await carregarTudo();
+  }catch(e){toast('❌ Erro ao salvar.');}
+}
+
 async function editarLider(id){
   const g=todosGrupos.find(x=>x._id===id);
   if(!g){toast('Grupo não encontrado.');return;}
