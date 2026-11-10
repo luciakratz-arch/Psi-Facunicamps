@@ -185,6 +185,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 <div class="main">
 
 <!-- S1: Boas-vindas -->
+<div id="faixa-grupo" style="display:none;position:sticky;top:0;z-index:20;margin:0 auto;max-width:760px;padding:10px 14px;background:#fff8e1;border-bottom:2px solid #f0b400;font-size:13px;color:#1c2540;text-align:center;line-height:1.4"></div>
 <div class="step on" id="s1">
   <div class="hero">
     <span class="hero-stars">&#9733; &#9733; &#9733; &#9733; &#9733;</span>
@@ -674,6 +675,14 @@ function esperar(ms){return new Promise(r=>setTimeout(r,ms));}
 
 
 // Mostra a meta do grupo, quantas respostas já foram e quantas faltam (dados somados e públicos; ninguém vê respostas de outras pessoas).
+// Faixa fixa no topo: deixa claro de qual grupo é este link (nome do grupo, turma e código).
+async function mostrarFaixaGrupo(cod,turma){
+  const f=document.getElementById('faixa-grupo');if(!f)return;
+  const esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+  const desenhar=function(nome,tur){f.innerHTML='&#127891; Você está respondendo pelo grupo: <strong>'+(nome?esc(nome):'código '+esc(cod))+'</strong><br><small>'+(tur?'Turma '+esc(tur)+' · ':'')+'Código '+esc(cod)+'</small>';f.style.display='block';};
+  desenhar('',turma);
+  try{const d=await lerProgresso(cod);if(d&&(d.nomeGrupo||d.codigoTurma))desenhar(d.nomeGrupo||'',d.codigoTurma||turma);}catch(e){}
+}
 async function lerProgresso(cod){
   await fcEnsureAnonymous();
   const r=await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'.json');
@@ -816,6 +825,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
     input.readOnly=true;
     document.getElementById('grupo-link-info').textContent='Turma '+(turma||'')+' · grupo '+codigo.toUpperCase()+' (preenchido pelo link)';
     document.getElementById('grupo-link-info').style.display='block';
+    mostrarFaixaGrupo(codigo.toUpperCase(),turma||'');
   }
   try{
     if(!window.fcConfigured)throw new Error('Configuração Firebase ausente.');

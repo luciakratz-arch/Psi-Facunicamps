@@ -351,7 +351,7 @@ async function salvarGrupo(){
     await fcEnsureAnonymous();
     const resp=await fcFetch(COL_GRUPOS+'/'+encodeURIComponent(data.codigoGrupo)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!resp.ok)throw new Error('O Firebase recusou o cadastro do grupo.');
-    try{await fcFetch('facunicamps-progresso/'+encodeURIComponent(data.codigoGrupo)+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({meta:Math.max(30,10*integrantes.length),integrantes:integrantes.length,nomes:integrantes.map(x=>String(x).slice(0,80))})});}catch(e){}
+    try{await fcFetch('facunicamps-progresso/'+encodeURIComponent(data.codigoGrupo)+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({meta:Math.max(30,10*integrantes.length),integrantes:integrantes.length,nomes:integrantes.map(x=>String(x).slice(0,80)),nomeGrupo:String(nome).slice(0,160),codigoTurma:String(data.codigoTurma||'').slice(0,60)})});}catch(e){}
     mostrarSucesso(data);
     window.grupoCadastrado=data;
   }catch(e){

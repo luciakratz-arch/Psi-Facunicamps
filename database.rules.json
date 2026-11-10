@@ -55,6 +55,14 @@
           "$i": {
             ".validate": "newData.isString() && newData.val().length <= 80"
           }
+        },
+        "nomeGrupo": {
+          ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || (auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-grupos').child($codigo).exists())",
+          ".validate": "newData.isString() && newData.val().length <= 160"
+        },
+        "codigoTurma": {
+          ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || (auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-grupos').child($codigo).exists())",
+          ".validate": "newData.isString() && newData.val().length <= 60"
         }
       }
     }
