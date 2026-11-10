@@ -208,7 +208,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <button class="btn btn-sec" onclick="verPreviaResultado()">Ver prévia do resultado</button>
   </div>
   <div style="margin-top:16px;text-align:center">
-    <p style="font-size:12px;color:var(--ts);text-align:center;margin-top:12px">O relatório agregado do grupo é compartilhado pela professora após atingir o mínimo de 10 respostas.</p>
+    <p style="font-size:12px;color:var(--ts);text-align:center;margin-top:12px">O relatório agregado do grupo é compartilhado pela professora quando o grupo atinge a meta de respostas (mínimo de 30 por grupo e 10 por integrante).</p>
   </div>
 </div>
 
@@ -401,7 +401,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 
 <!-- S5: Acesso ao relatório do grupo -->
 <div class="step" id="s5">
-  <div class="sc"><h2>Relatório agregado</h2><p>O link privado do relatório é enviado ao líder após a liberação pela pesquisadora. São necessárias pelo menos 10 respostas.</p><button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button></div>
+  <div class="sc"><h2>Relatório agregado</h2><p>O link privado do relatório é enviado ao líder após a liberação pela pesquisadora. O grupo precisa atingir a meta de respostas (mínimo de 30 por grupo e 10 por integrante).</p><button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button></div>
 </div>
 
 <!-- S6: Relatório do grupo (dados) -->
@@ -625,7 +625,8 @@ function calcularEMostrar(isPreview=false){
   else rec='&#128154; Você está em um bom momento. Continue investindo em equilíbrio entre vida pessoal e obrigações.';
   html+='<div class="sc" style="border-left:4px solid var(--bm)"><div class="sc-ttl">&#128172; Recomendação</div><div style="font-size:14px;color:var(--txt);line-height:1.65">'+rec+'</div></div>';
   html+='<div class="share-sec"><h3>&#128242; Compartilhe</h3><p>O WhatsApp abrirá com um resumo do seu resultado. Você confirma o envio no aplicativo.</p><div class="share-btns"><button class="btn btn-wa" onclick="shareWA()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Enviar meu resultado pelo WhatsApp</button>';
-  html+='<p style="font-size:12px;color:var(--ts)">O relatório agregado será enviado pelo líder do grupo quando houver pelo menos 10 respostas.</p>';
+  html+='<div id="progresso-grupo-res" style="display:none;margin:10px 0;padding:10px 12px;border-radius:10px;background:#EAF0FB;font-size:13px;color:#1c2540;line-height:1.5;text-align:center"></div>';
+  html+='<p style="font-size:12px;color:var(--ts)">Cada resposta feita por você conta para a meta do seu grupo. O relatório do grupo é liberado quando a meta for atingida.</p>';
   html+='<button class="btn btn-sec" onclick="location.reload()">&#128260; Avaliar outra pessoa</button></div>';
   html+='<div style="margin-top:14px"><p style="font-size:12px;color:var(--ts);margin-bottom:6px;font-weight:600">&#128203; Clique na caixa e copie (Ctrl+A &#8594; Ctrl+C):</p><textarea id="txt-resultado" readonly onclick="this.select()" style="width:100%;min-height:160px;padding:12px;border:2px solid var(--bm);border-radius:10px;background:var(--sur2);color:var(--txt);font-family:var(--ff2);font-size:13px;line-height:1.6;resize:vertical;cursor:text"></textarea></div></div>';
   el.innerHTML=html;
@@ -669,19 +670,21 @@ function esperar(ms){return new Promise(r=>setTimeout(r,ms));}
 
 // Mostra a meta do grupo, quantas respostas já foram e quantas faltam (dados somados e públicos; ninguém vê respostas de outras pessoas).
 async function mostrarProgresso(cod){
-  const caixa=document.getElementById('progresso-grupo');if(!caixa)return;
+  const caixas=['progresso-grupo','progresso-grupo-res'].map(function(i){return document.getElementById(i);}).filter(Boolean);
+  if(!caixas.length)return;
   cod=String(cod||'').trim().toUpperCase();
-  if(cod.length<8){caixa.style.display='none';return;}
+  const esconder=function(){caixas.forEach(function(c){c.style.display='none';});};
+  if(cod.length<8){esconder();return;}
   try{
     await fcEnsureAnonymous();
     const r=await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'.json');
     if(!r.ok)throw new Error();
     const d=await r.json();
-    if(!d||!d.meta){caixa.style.display='none';return;}
+    if(!d||!d.meta){esconder();return;}
     const feitas=d.envios?Object.keys(d.envios).length:0,meta=Number(d.meta),falta=Math.max(meta-feitas,0),integ=Math.max(Number(d.integrantes)||1,1),porInteg=Math.ceil(meta/integ);
-    caixa.style.display='block';
-    caixa.innerHTML='<strong>Meta do grupo: '+meta+' respostas</strong> ('+porInteg+' por integrante).<br>Já feitas: <strong>'+feitas+'</strong> · Faltam: <strong>'+falta+'</strong>'+(falta===0?' &#127881; Meta atingida!':'');
-  }catch(e){caixa.style.display='none';}
+    const txt='<strong>Meta do grupo: '+meta+' respostas</strong> ('+porInteg+' por integrante).<br>Já feitas: <strong>'+feitas+'</strong> · Faltam: <strong>'+falta+'</strong>'+(falta===0?' &#127881; Meta atingida!':'');
+    caixas.forEach(function(c){c.style.display='block';c.innerHTML=txt;});
+  }catch(e){esconder();}
 }
 document.addEventListener('DOMContentLoaded',function(){
   const el=document.getElementById('codigo');if(!el)return;
@@ -746,11 +749,11 @@ async function salvarFirebase(fs,bi){
 }
 
 function abrirRelatorioGrupo(){
-  alert('Peça ao líder do grupo o link do relatório agregado. Ele será liberado após 10 respostas.');
+  alert('Peça ao líder do grupo o link do relatório agregado. Ele será liberado quando o grupo atingir a meta de respostas.');
 }
 
 async function carregarCodigosDisponiveis(){
-  document.getElementById('msg-rel').textContent='O relatório agregado é compartilhado por link pela professora após atingir 10 respostas.';
+  document.getElementById('msg-rel').textContent='O relatório agregado é compartilhado por link pela professora quando o grupo atingir a meta de respostas.';
 }
 
 async function carregarRelatorio(){
