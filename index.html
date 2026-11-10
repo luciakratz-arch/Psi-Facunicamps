@@ -526,6 +526,8 @@ function pick(btn,id,val){
   ST.scores[id]=val;
 }
 
+function voltarAoApp(){window.location.href=location.pathname+location.search.replace(/[?&]demo=resultado/,'').replace(/^&/,'?');}
+
 function verPreviaResultado(){
   window.location.href=new URL('index.html?demo=resultado',location.href).href;
 }
@@ -608,7 +610,7 @@ function calcularEMostrar(isPreview=false){
   const curso_info=ST.curso?' · '+ST.curso:'';
   const trab_info=ST.tipo_trabalho?' · '+ST.tipo_trabalho:'';
   let html='<div class="res-hero"><h2>Olá, '+escaparHtml(ST.nome.split(' ')[0])+'! Seu resultado está pronto.</h2><p>'+escaparHtml(ST.genero)+' · '+ST.idade+' anos · '+escaparHtml(ST.estado_civil)+'</p><p style="margin-top:4px;font-size:12px;color:rgba(255,255,255,.75)">'+escaparHtml(ST.vinculo+curso_info+trab_info)+' · Grupo: <strong>'+escaparHtml(ST.codigo)+'</strong></p></div>';
-  if(isPreview)html='<div class="sc" role="status"><strong>Prévia demonstrativa.</strong> Estes dados são fictícios; nada foi enviado nem salvo.</div>'+html;
+  if(isPreview)html='<button class="btn btn-ghost" onclick="voltarAoApp()" style="margin-bottom:10px">&#8592; Voltar ao app</button><div class="sc" role="status"><strong>Prévia demonstrativa.</strong> Estes dados são fictícios; nada foi enviado nem salvo.</div>'+html;
   html+='<div class="nivel-card '+bi.cls+'"><div class="nivel-ttl">'+bi.icon+' Risco de Burnout</div><div class="nivel-val">'+bi.nivel+(bi.fa>0?' <span style="font-size:16px;opacity:.7">· Fase '+bi.fa+'</span>':'')+'</div><div class="nivel-desc">'+bi.txt+'</div></div>';
   html+='<div class="sc"><div class="sc-ttl">&#128202; Seu perfil nas 12 fases</div>';
   fs.forEach(({fase,pct})=>{
@@ -630,7 +632,7 @@ function calcularEMostrar(isPreview=false){
   html+='<div id="progresso-grupo-res" style="'+(isPreview?'display:block':'display:none')+';margin:10px 0;padding:10px 12px;border-radius:10px;background:#EAF0FB;font-size:13px;color:#1c2540;line-height:1.5;text-align:center">'+(isPreview?'<em>Exemplo (prévia):</em><br><strong>Sua meta: 10 respostas</strong><br>Você já fez: <strong>3</strong> · Faltam para você: <strong>7</strong><br><br><strong>Meta do grupo: 40 respostas</strong><br>Já feitas: <strong>12</strong> · Faltam: <strong>28</strong>':'')+'</div>';
   html+='<button class="btn btn-ghost" onclick="abrirRelatorioGrupo()">&#128196; Ver relatório do grupo</button>';
   html+='<p style="font-size:12px;color:var(--ts)">Cada resposta feita por você conta para a meta do seu grupo. O relatório do grupo é liberado quando a meta for atingida.</p>';
-  html+='<button class="btn btn-sec" onclick="location.reload()">&#128260; Avaliar outra pessoa</button></div>';
+  html+=isPreview?'<button class="btn btn-sec" onclick="voltarAoApp()">&#8592; Voltar ao app</button></div>':'<button class="btn btn-sec" onclick="location.reload()">&#128260; Avaliar outra pessoa</button></div>';
   html+='<div style="margin-top:14px"><p style="font-size:12px;color:var(--ts);margin-bottom:6px;font-weight:600">&#128203; Clique na caixa e copie (Ctrl+A &#8594; Ctrl+C):</p><textarea id="txt-resultado" readonly onclick="this.select()" style="width:100%;min-height:160px;padding:12px;border:2px solid var(--bm);border-radius:10px;background:var(--sur2);color:var(--txt);font-family:var(--ff2);font-size:13px;line-height:1.6;resize:vertical;cursor:text"></textarea></div></div>';
   el.innerHTML=html;
   if(isPreview){
