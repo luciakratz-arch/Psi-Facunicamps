@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Links dos grupos — Mapa do Burnout</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-client.js"></script>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef3fb;font-family:Inter,Arial,sans-serif;color:#1c2540}
+  header{background:#0f2a6b;color:#fff;padding:16px 20px;border-bottom:4px solid #f0b400}
+  header h1{margin:0;font-family:Montserrat,Arial,sans-serif;font-size:19px}
+  header p{margin:4px 0 0;font-size:12px;opacity:.8}
+  main{max-width:860px;margin:0 auto;padding:16px}
+  .btn{border:0;border-radius:10px;padding:9px 14px;font-weight:600;font-size:13px;cursor:pointer;background:#0f2a6b;color:#fff}
+  .btn.sec{background:#e3eaf8;color:#0f2a6b}.btn.wa{background:#25d366;color:#fff}
+  .turma{margin:20px 0 8px;padding:10px 14px;background:#0f2a6b;color:#fff;border-radius:10px;font-family:Montserrat,Arial,sans-serif;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .grupo{background:#fff;border:1px solid #d9e2f3;border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .grupo h3{margin:0 0 8px;font-size:15px}
+  .lbl{font-size:11px;font-weight:700;color:#556;text-transform:uppercase;letter-spacing:.5px;margin:8px 0 3px}
+  .linha{display:flex;gap:6px;align-items:center}
+  .caixa{flex:1;background:#f3f6fc;border:1px solid #d9e2f3;border-radius:8px;padding:8px 10px;font-size:12.5px;word-break:break-all;font-family:Consolas,monospace}
+  .acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  #login{max-width:380px;margin:60px auto;background:#fff;border-radius:14px;padding:24px;text-align:center;border:1px solid #d9e2f3}
+  #erro{color:#c0392b;font-size:13px;margin-top:10px;display:none}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0f2a6b;color:#fff;padding:9px 16px;border-radius:20px;font-size:13px;display:none}
+</style>
+</head>
+<body>
+<header><h1>Links dos grupos — Mapa do Burnout</h1><p>Facunicamps · por turma, com o link do questionário e o código de cada grupo</p></header>
+
+<div id="login">
+  <p style="margin-top:0">Acesso restrito à pesquisadora.</p>
+  <button class="btn" onclick="entrar()">Entrar com Google</button>
+  <div id="erro"></div>
+</div>
+
+<main id="conteudo" style="display:none">
+  <div class="acoes" style="margin-top:0">
+    <button class="btn" onclick="baixarArquivo()">&#11015; Baixar arquivo para enviar (todas as turmas)</button>
+    <button class="btn sec" onclick="window.print()">&#128424; Imprimir / PDF</button>
+  </div>
+  <div id="lista"></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+let grupos=[],turmas=[];
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200);}
+function linkDe(g){const u=new URL('index.html',location.href);u.searchParams.set('grupo',g.codigoGrupo||g.codigo);u.searchParams.set('turma',g.codigoTurma||'');return u.href;}
+function copiar(t){navigator.clipboard.writeText(t).then(()=>toast('Copiado!')).catch(()=>{prompt('Copie o texto:',t);});}
+function zap(i){
+  const g=grupos[i];const cod=g.codigoGrupo||g.codigo;
+  const msg='🎓 *Mapa do Burnout — Facunicamps*\n\nGrupo: *'+(g.nomeGrupo||cod)+'*\n\nAcesse o questionário pelo link abaixo (o código do grupo já vem preenchido):\n'+linkDe(g)+'\n\nSe preferir digitar, o código do grupo é:\n'+cod+'\n\nA participação é voluntária. Obrigada!';
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank','noopener');
+}
+function porTurma(){
+  const m={};
+  turmas.forEach(t=>{m[t.codigo]={turma:t,grupos:[]};});
+  grupos.forEach((g,i)=>{const k=g.codigoTurma||'—';if(!m[k])m[k]={turma:null,grupos:[]};m[k].grupos.push({g,i});});
+  return Object.keys(m).sort().map(k=>({chave:k,turma:m[k].turma,grupos:m[k].grupos}));
+}
+function render(){
+  document.getElementById('lista').innerHTML=porTurma().map(t=>`
+    <div class="turma"><span>🎓 ${esc(t.chave)}${t.turma?' · '+esc(t.turma.turnoNome||'')+(t.turma.semestre?' · '+esc(t.turma.semestre)+'º sem.':''):''}</span><span>${t.grupos.length} grupo(s)</span></div>
+    ${t.grupos.map(({g,i})=>{const cod=g.codigoGrupo||g.codigo,lk=linkDe(g);return `
+    <div class="grupo"><h3>${esc(g.nomeGrupo||cod)}</h3>
+      <div class="lbl">Link do questionário (com o código já preenchido)</div>
+      <div class="linha"><div class="caixa">${esc(lk)}</div><button class="btn sec" onclick="copiar(grupos[${i}]&&linkDe(grupos[${i}]))">Copiar</button></div>
+      <div class="lbl">Só o código do grupo</div>
+      <div class="linha"><div class="caixa">${esc(cod)}</div><button class="btn sec" onclick="copiar('${esc(cod)}')">Copiar</button></div>
+      <div class="acoes"><button class="btn wa" onclick="zap(${i})">💬 Enviar pelo WhatsApp</button></div>
+    </div>`;}).join('')||'<div class="grupo">Nenhum grupo nesta turma ainda.</div>'}`).join('')||'<div class="grupo">Nenhum grupo cadastrado.</div>';
+}
+function baixarArquivo(){
+  const linhas=porTurma().map(t=>`<h2>${esc(t.chave)}</h2>`+(t.grupos.map(({g})=>{const cod=g.codigoGrupo||g.codigo,lk=linkDe(g);return `<div class="g"><b>${esc(g.nomeGrupo||cod)}</b><br>Link: <a href="${esc(lk)}">${esc(lk)}</a><br>Código: <code>${esc(cod)}</code></div>`;}).join('')||'<p>Sem grupos.</p>')).join('');
+  const html='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Links dos grupos — Mapa do Burnout</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:20px auto;padding:0 14px;color:#1c2540}h1{color:#0f2a6b}h2{background:#0f2a6b;color:#fff;padding:8px 12px;border-radius:8px;font-size:15px}.g{border:1px solid #d9e2f3;border-radius:10px;padding:10px 12px;margin:8px 0;word-break:break-all;line-height:1.6}code{background:#eef3fb;padding:2px 6px;border-radius:5px}</style></head><body><h1>Mapa do Burnout — Facunicamps</h1><p>Encontre o seu grupo e use o link (o código já vem preenchido) ou digite o código.</p>'+linhas+'</body></html>';
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download='links-grupos-burnout.html';a.click();
+}
+async function entrar(){
+  const erro=document.getElementById('erro');erro.style.display='none';
+  try{
+    if(!window.fcConfigured)throw new Error('Firebase não configurado.');
+    await fcSignInWithGoogle();
+    const [rG,rT]=await Promise.all([fcFetch('facunicamps-grupos.json'),fcFetch('facunicamps-turmas.json')]);
+    const dG=await rG.json(),dT=await rT.json();
+    turmas=dT?Object.entries(dT).map(([k,v])=>({...v,codigo:v.codigo||k})):[];
+    grupos=dG?Object.entries(dG).map(([k,v])=>({...v,codigoGrupo:v.codigoGrupo||v.codigo||k})).sort((a,b)=>String(a.nomeGrupo||'').localeCompare(String(b.nomeGrupo||''))):[];
+    document.getElementById('login').style.display='none';
+    document.getElementById('conteudo').style.display='block';
+    render();
+  }catch(e){erro.textContent=e.message||'Não foi possível entrar.';erro.style.display='block';}
+}
+</script>
+</body>
+</html>
