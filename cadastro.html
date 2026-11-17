@@ -169,14 +169,10 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
       <!-- Integrantes -->
       <div class="fg">
         <label class="lbl">Integrantes do Grupo <span class="req">*</span></label>
-        <div class="integrantes-info">Adicione todos os membros do grupo (mínimo 2)</div>
+        <div class="integrantes-info">Informe pelo menos uma pessoa do grupo.</div>
         <div id="integrantes-lista">
           <div class="integrante-row">
-            <input class="inp" type="text" placeholder="Nome completo do integrante 1">
-            <button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button>
-          </div>
-          <div class="integrante-row">
-            <input class="inp" type="text" placeholder="Nome completo do integrante 2">
+            <input class="inp" type="text" placeholder="Nome completo da pessoa responsável">
             <button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button>
           </div>
         </div>
@@ -309,7 +305,7 @@ function adicionarIntegrante(){
 
 function removerIntegrante(btn){
   const lista=document.getElementById('integrantes-lista');
-  if(lista.children.length<=2){toast('⚠️ O grupo precisa ter pelo menos 2 integrantes.');return;}
+  if(lista.children.length<=1){toast('⚠️ O grupo precisa ter pelo menos uma pessoa.');return;}
   btn.parentElement.remove();
 }
 
@@ -327,7 +323,7 @@ async function salvarGrupo(){
   if(!nome){toast('⚠️ Informe o nome do grupo.');return;}
   if(!publicoAlvo){toast('⚠️ Informe o público-alvo da pesquisa.');return;}
   if(!zap||zap.length<10){toast('⚠️ Informe o WhatsApp do líder com DDD.');return;}
-  if(integrantes.length<2){toast('⚠️ Adicione pelo menos 2 integrantes.');return;}
+  if(integrantes.length<1){toast('⚠️ Informe pelo menos uma pessoa do grupo.');return;}
   const btn=document.getElementById('btn-salvar');
   btn.disabled=true;btn.textContent='⏳ Salvando...';
   atualizarCodigo();
@@ -351,7 +347,7 @@ async function salvarGrupo(){
     await fcEnsureAnonymous();
     const resp=await fcFetch(COL_GRUPOS+'/'+encodeURIComponent(data.codigoGrupo)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!resp.ok)throw new Error('O Firebase recusou o cadastro do grupo.');
-    try{await fcFetch('facunicamps-progresso/'+encodeURIComponent(data.codigoGrupo)+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({meta:Math.max(30,10*integrantes.length),integrantes:integrantes.length,nomes:integrantes.map(x=>String(x).slice(0,80)),nomeGrupo:String(nome).slice(0,160),codigoTurma:String(data.codigoTurma||'').slice(0,60)})});}catch(e){}
+    try{await fcFetch('facunicamps-progresso/'+encodeURIComponent(data.codigoGrupo)+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({meta:30,integrantes:integrantes.length,nomes:integrantes.map(x=>String(x).slice(0,80)),nomeGrupo:String(nome).slice(0,160),codigoTurma:String(data.codigoTurma||'').slice(0,60)})});}catch(e){}
     mostrarSucesso(data);
     window.grupoCadastrado=data;
   }catch(e){
@@ -427,11 +423,10 @@ function cadastrarOutro(){
   document.getElementById('cod-preview').style.display='none';
   turmaAtual=null;codigoGerado='';
   window.grupoCadastrado=null;
-  // Resetar integrantes para 2 campos
+  // Resetar integrantes para um campo
   const lista=document.getElementById('integrantes-lista');
   lista.innerHTML=
-    `<div class="integrante-row"><input class="inp" type="text" placeholder="Nome completo do integrante 1"><button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button></div>`+
-    `<div class="integrante-row"><input class="inp" type="text" placeholder="Nome completo do integrante 2"><button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button></div>`;
+    `<div class="integrante-row"><input class="inp" type="text" placeholder="Nome completo da pessoa responsável"><button class="btn-rem" onclick="removerIntegrante(this)" title="Remover">×</button></div>`;
   const btn=document.getElementById('btn-salvar');
   btn.disabled=false;btn.innerHTML='💾 Cadastrar Grupo e Gerar Código';
   window.scrollTo({top:0,behavior:'smooth'});

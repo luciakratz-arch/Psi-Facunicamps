@@ -209,7 +209,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
     <button class="btn btn-sec" onclick="verPreviaResultado()">Ver prévia do resultado</button>
   </div>
   <div style="margin-top:16px;text-align:center">
-    <p style="font-size:12px;color:var(--ts);text-align:center;margin-top:12px">Meta de cada grupo: mínimo de 30 respostas e 10 por integrante. Você acompanha a sua meta e a do grupo ao digitar o código.</p>
+    <p style="font-size:12px;color:var(--ts);text-align:center;margin-top:12px">Limite de 30 questionários por grupo. Você acompanha o progresso ao digitar o código.</p>
   </div>
 </div>
 
@@ -403,7 +403,7 @@ input,select,textarea{font-family:var(--ff2);font-size:16px}
 
 <!-- S5: Acesso ao relatório do grupo -->
 <div class="step" id="s5">
-  <div class="sc"><h2>Relatório agregado</h2><p>O relatório do grupo fica disponível quando a meta de respostas é atingida (mínimo de 30 por grupo e 10 por integrante).</p><button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button></div>
+  <div class="sc"><h2>Relatório agregado</h2><p>O relatório do grupo fica disponível quando são registradas 30 respostas.</p><button class="btn btn-ghost" onclick="go(1)">&#8592; Voltar</button></div>
 </div>
 
 <!-- S6: Relatório do grupo (dados) -->
@@ -630,7 +630,7 @@ function calcularEMostrar(isPreview=false){
   else rec='&#128154; Você está em um bom momento. Continue investindo em equilíbrio entre vida pessoal e obrigações.';
   html+='<div class="sc" style="border-left:4px solid var(--bm)"><div class="sc-ttl">&#128172; Recomendação</div><div style="font-size:14px;color:var(--txt);line-height:1.65">'+rec+'</div></div>';
   html+='<div class="share-sec"><h3>&#128242; Compartilhe</h3><p>O WhatsApp abrirá com um resumo do seu resultado. Você confirma o envio no aplicativo.</p><div class="share-btns"><button class="btn btn-wa" onclick="shareWA()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Enviar meu resultado pelo WhatsApp</button>';
-  html+='<div id="progresso-grupo-res" style="'+(isPreview?'display:block':'display:none')+';margin:10px 0;padding:10px 12px;border-radius:10px;background:#EAF0FB;font-size:13px;color:#1c2540;line-height:1.5;text-align:center">'+(isPreview?'<em>Exemplo (prévia):</em><br><strong>Sua meta: 10 respostas</strong><br>Você já fez: <strong>3</strong> · Faltam para você: <strong>7</strong><br><br><strong>Meta do grupo: 40 respostas</strong><br>Já feitas: <strong>12</strong> · Faltam: <strong>28</strong>':'')+'</div>';
+  html+='<div id="progresso-grupo-res" style="'+(isPreview?'display:block':'display:none')+';margin:10px 0;padding:10px 12px;border-radius:10px;background:#EAF0FB;font-size:13px;color:#1c2540;line-height:1.5;text-align:center">'+(isPreview?'<em>Exemplo (prévia):</em><br><strong>Sua meta: 30 respostas</strong><br>Você já fez: <strong>3</strong> · Faltam para você: <strong>27</strong><br><br><strong>Meta do grupo: 30 respostas</strong><br>Já feitas: <strong>12</strong> · Faltam: <strong>18</strong>':'')+'</div>';
   html+='<button class="btn btn-ghost" onclick="abrirRelatorioGrupo()">&#128196; Ver relatório do grupo</button>';
   html+='<p style="font-size:12px;color:var(--ts)">Cada resposta feita por você conta para a meta do seu grupo. O relatório do grupo é liberado quando a meta for atingida.</p>';
   html+=isPreview?'<button class="btn btn-sec" onclick="voltarAoApp()">&#8592; Voltar ao app</button></div>':'<button class="btn btn-sec" onclick="location.reload()">&#128260; Avaliar outra pessoa</button></div>';
@@ -708,9 +708,19 @@ async function mostrarProgresso(cod){
     const d=await lerProgresso(cod);
     if(!d||!d.meta){esconder();return;}
     if(sel&&d.nomes){
-      const nomes=Object.values(d.nomes).filter(Boolean);
-      if(nomes.length&&sel.options.length<=1){nomes.forEach(function(n){const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
-        try{const salvo=localStorage.getItem('bm_aplicador_'+cod);if(salvo&&nomes.indexOf(salvo)>=0)sel.value=salvo;}catch(e){}}
+      const nomes=Object.values(d.nomes).map(String).map(function(n){return n.trim();}).filter(Boolean);
+      const selecionado=(window.ST&&ST.aplicador)||sel.value||'';
+      sel.innerHTML='<option value="">Escolha o seu nome</option>';
+      nomes.forEach(function(n){
+        const o=document.createElement('option');
+        o.value=n;
+        o.textContent=n;
+        sel.appendChild(o);
+      });
+      try{
+        const salvo=selecionado||localStorage.getItem('bm_aplicador_'+cod)||'';
+        if(salvo&&nomes.indexOf(salvo)>=0)sel.value=salvo;
+      }catch(e){}
       if(boxNome&&nomes.length)boxNome.style.display='block';
     }
     const meu=(window.ST&&ST.aplicador)||(sel&&sel.value)||'';
@@ -729,9 +739,17 @@ document.addEventListener('DOMContentLoaded',function(){
 
 async function gravarResposta(item){
   await fcEnsureAnonymous();
+  const codigo=String((item.data&&item.data.codigo)||'').trim().toUpperCase();
+  const progresso=await lerProgresso(codigo);
+  const envios=progresso&&progresso.envios||{};
+  if(Object.keys(envios).length>=30&&!Object.prototype.hasOwnProperty.call(envios,item.chave)){
+    const erro=new Error('Este grupo já atingiu o limite de 30 questionários.');
+    erro.code='GROUP_LIMIT';
+    throw erro;
+  }
   const response=await fcFetch(COL+'/'+item.chave+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(item.data)});
   if(!response.ok){const e=new Error('recusado '+response.status);e.status=response.status;throw e;}
-  try{const cod=String((item.data&&item.data.codigo)||'').toUpperCase();if(cod)await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'/envios/'+item.chave+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify((item.data&&item.data.aplicador)?item.data.aplicador:true)});}catch(e){}
+  try{if(codigo)await fcFetch('facunicamps-progresso/'+encodeURIComponent(codigo)+'/envios/'+item.chave+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify((item.data&&item.data.aplicador)?item.data.aplicador:true)});}catch(e){}
   try{mostrarProgresso((item.data&&item.data.codigo)||'');}catch(e){}
 }
 
@@ -744,7 +762,12 @@ async function enviarPendente(caixa){
       for(const item of lerPendente()){await gravarResposta(item);removerPendente(item.chave);}
       caixa.style.cssText='text-align:center;font-size:13px;color:#047857;margin:10px 0';caixa.textContent='Esta resposta foi salva com segurança.';return true;
     }
-    catch(e){ultimo=e;if(e&&(e.status===401||e.status===403))break;await esperar(1500*(i+1));}
+    catch(e){ultimo=e;if(e&&(e.code==='GROUP_LIMIT'||e.status===401||e.status===403))break;await esperar(1500*(i+1));}
+  }
+  if(ultimo&&ultimo.code==='GROUP_LIMIT'){
+    caixa.style.cssText='text-align:center;font-size:14px;color:#9A3412;background:#FFF7ED;border:1px solid #FB923C;border-radius:12px;padding:12px;margin:12px 0';
+    caixa.textContent='ATENÇÃO: este grupo já atingiu o limite de 30 questionários. Esta resposta não foi registrada.';
+    return false;
   }
   const recusado=ultimo&&(ultimo.status===401||ultimo.status===403);
   caixa.style.cssText='text-align:center;font-size:14px;color:#9A3412;background:#FFF7ED;border:1px solid #FB923C;border-radius:12px;padding:12px;margin:12px 0';

@@ -16,7 +16,7 @@
     "facunicamps-burnout": {
       ".read": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true",
       "$resposta": {
-        ".write": "auth != null && (auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || auth.token.firebase.sign_in_provider === 'anonymous' && (newData.child('envioId').val() === $resposta && (!data.exists() || data.child('envioId').val() === $resposta) || auth.uid === $resposta && !data.exists()) && root.child('facunicamps-grupos').child(newData.child('codigo').val()).exists())",
+        ".write": "auth != null && (auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || auth.token.firebase.sign_in_provider === 'anonymous' && (newData.child('envioId').val() === $resposta && (!data.exists() || data.child('envioId').val() === $resposta) || auth.uid === $resposta && !data.exists()) && root.child('facunicamps-grupos').child(newData.child('codigo').val()).exists() && (root.child('facunicamps-progresso').child(newData.child('codigo').val()).child('envios').numChildren() < 30 || root.child('facunicamps-progresso').child(newData.child('codigo').val()).child('envios').child($resposta).exists()))",
         ".validate": "newData.hasChildren(['nome', 'codigo', 'fases', 'risco', 'ts'])"
       }
     },
@@ -33,8 +33,8 @@
       "$codigo": {
         ".read": true,
         "meta": {
-          ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || (auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-grupos').child($codigo).exists())",
-          ".validate": "newData.isNumber() && newData.val() >= 30 && newData.val() <= 2000"
+          ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || (auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-grupos').child($codigo).exists() && root.child('facunicamps-progresso').child($codigo).child('envios').numChildren() < 30)",
+          ".validate": "newData.isNumber() && newData.val() === 30"
         },
         "integrantes": {
           ".write": "auth != null && auth.token.email === 'contato@luciakratz.com.br' && auth.token.email_verified === true || (auth != null && auth.token.firebase.sign_in_provider === 'anonymous' && !data.exists() && root.child('facunicamps-grupos').child($codigo).exists())",

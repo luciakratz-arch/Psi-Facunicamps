@@ -409,8 +409,8 @@ async function carregarTudo(){
 }
 
 
-// ---- META DE RESPOSTAS (regra da Dra. Lucia): mínimo de 30 por grupo e 10 por integrante; com 2 integrantes a meta é 30 (15 cada) ----
-function metaDoGrupo(g){const n=Array.isArray(g&&g.integrantes)?g.integrantes.length:0;return Math.max(30,10*Math.max(n,1));}
+// ---- META DE RESPOSTAS: até 30 questionários por grupo ----
+function metaDoGrupo(g){return 30;}
 function metaPorIntegrante(g){const n=Array.isArray(g&&g.integrantes)&&g.integrantes.length?g.integrantes.length:1;return Math.ceil(metaDoGrupo(g)/n);}
 function publicoDoGrupo(g){return String((g&&(g.publico||g.publicoAlvo))||'').trim();}
 
@@ -445,6 +445,7 @@ async function salvarGrupo(){
   const integrantes=document.getElementById('ng-integrantes').value.split(/\n/).map(x=>x.trim()).filter(Boolean);
   if(!curso||!turno||!semestre||!foco||!publico){toast('⚠️ Preencha todos os campos obrigatórios.');return;}
   if(zapLider.length<10||zapLider.length>13){toast('⚠️ Informe o WhatsApp do líder com DDD.');return;}
+  if(!integrantes.length){toast('⚠️ Informe pelo menos uma pessoa do grupo.');return;}
   const cod=gerarCodigo();
   if(!cod){toast('⚠️ Erro ao gerar código.');return;}
   const obs=document.getElementById('ng-obs').value.trim();
@@ -607,10 +608,10 @@ function renderResumoPublico(grupo,resps){
       <div class="sc"><div class="sc-ttl">Síntese dos resultados</div><p>As maiores médias descritivas foram observadas nas fases ${maioresFases.map(fase=>escapeHtml(fase.nome)+' ('+fase.pct+'%)').join(', ')}. Na classificação descritiva do instrumento, ${distribuicao.baixo} de ${n} respostas ficaram na faixa inicial, ${distribuicao.moderado} na intermediária e ${distribuicao.elevado} na elevada. Esses dados descrevem exclusivamente as respostas obtidas neste grupo.</p></div>
       <div class="sc"><div class="sc-ttl">Considerações finais</div><p>Os achados oferecem um panorama inicial para reflexão e discussão acadêmica sobre saúde mental e condições de estudo. Por se tratar de autorrelato, amostra por conveniência e análise descritiva de um grupo, os resultados não permitem estabelecer diagnóstico, causalidade ou generalização para outros estudantes. Recomenda-se interpretar os resultados coletivos com acompanhamento docente e sem identificar participantes.</p></div>
       <div class="sc">Relatório agregado. Não contém nomes, telefones nem respostas individuais. Gerado em ${new Date().toLocaleDateString('pt-BR')}.</div>`
-      :`<div class="sc">O relatório compartilhável será liberado quando o grupo atingir a meta de ${metaGrupo} respostas (mínimo de 30 por grupo e 10 por integrante). No momento: ${n}/${metaGrupo}; faltam ${Math.max(metaGrupo-n,0)}. Dados individuais não são exibidos.</div>`}
+      :`<div class="sc">O relatório compartilhável será liberado quando o grupo atingir 30 respostas. No momento: ${n}/30; faltam ${Math.max(30-n,0)}. Dados individuais não são exibidos.</div>`}
     </div>
     <div class="btn-row">
-      ${podeCompartilhar?`<button class="btn btn-pri" onclick="publicarRelatorio().catch(mostrarErroRelatorio)">🔗 Gerar link do relatório</button><button class="btn btn-sec" onclick="imprimirRelatorio()">📄 Salvar PDF</button><button class="btn btn-wa" id="btn-whats-rel" onclick="enviarRelatorioWhats()" disabled>💬 WhatsApp</button>`:''}
+      ${podeCompartilhar?`<button class="btn btn-pri" onclick="publicarRelatorio().catch(mostrarErroRelatorio)">🔗 Gerar link do relatório</button><button class="btn btn-sec" onclick="imprimirRelatorio()">📄 Salvar PDF</button><button class="btn btn-wa" id="btn-whats-rel" onclick="enviarRelatorioWhats()">💬 WhatsApp</button>`:''}
     </div>
     <p id="status-relatorio" class="grupo-meta" aria-live="polite"></p>`;
   window.relatorioCompartilhado=null;
@@ -699,7 +700,7 @@ function verRelatorioTurma(codigoTurma){
       <div class="rel-stats"><div class="rel-stat"><div class="rel-stat-num">${grupos.length}</div><div class="rel-stat-lbl">Grupos</div></div><div class="rel-stat"><div class="rel-stat-num">${totInt}</div><div class="rel-stat-lbl">Integrantes</div></div><div class="rel-stat"><div class="rel-stat-num">${totResp}</div><div class="rel-stat-lbl">Respostas</div></div><div class="rel-stat"><div class="rel-stat-num">${liberados}/${grupos.length}</div><div class="rel-stat-lbl">Metas atingidas</div></div></div>
       <div class="sc"><div class="sc-ttl">Grupos cadastrados e andamento</div>
         <table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#EAF0FB;text-align:left"><th style="padding:8px">Grupo e público-alvo</th><th style="padding:8px">Líder</th><th style="padding:8px">Integrantes</th><th style="padding:8px">Respostas / meta</th><th style="padding:8px">Situação</th><th class="sem-imprimir"></th></tr>${linhas||'<tr><td colspan="6" style="padding:10px">Nenhum grupo cadastrado nesta turma.</td></tr>'}</table></div>
-      <div class="sc">Meta de cada grupo: mínimo de 30 respostas e 10 por integrante (com 2 integrantes, 15 cada). Relatório agregado: não contém respostas individuais nem dados de quem respondeu.</div>
+      <div class="sc">Limite de cada grupo: 30 questionários. Relatório agregado: não contém respostas individuais nem dados de quem respondeu.</div>
     </div>
     <div class="btn-row"><button class="btn btn-sec" onclick="document.title='Turma ${escapa(codigoTurma)}';window.print()">📄 Salvar como PDF</button></div>`;
 }
@@ -724,14 +725,28 @@ function imprimirRelatorio(){
   window.print();
 }
 
-function enviarRelatorioWhats(){
-  const link=window.relatorioCompartilhado;
+async function enviarRelatorioWhats(){
+  let link=window.relatorioCompartilhado;
   const grupo=window.grupoRelatorioAtual;
-  if(!link){toast('Publique o relatório antes de compartilhar.');return;}
+  if(!link){
+    await publicarRelatorio().catch(mostrarErroRelatorio);
+    link=window.relatorioCompartilhado;
+  }
+  if(!link){toast('Não foi possível gerar o link do relatório.');return;}
   const zap=String(grupo?.zapLider||'').replace(/\D/g,'');
   const numero=zap?(zap.startsWith('55')?zap:'55'+zap):'';
   const mensagem=encodeURIComponent(`Olá! Segue o resumo científico agregado do grupo ${grupo.nomeGrupo||grupo.codigoGrupo} (${grupo.codigoGrupo}). O relatório contém apenas resultados consolidados: ${link}\n\nPara salvar em PDF, abra o link e escolha Imprimir → Salvar como PDF.`);
-  window.open('https://wa.me/'+numero+'?text='+mensagem,'_blank','noopener');
+  const url='https://wa.me/'+numero+'?text='+mensagem;
+  const aba=window.open(url,'_blank');
+  if(!aba){
+    const a=document.createElement('a');
+    a.href=url;
+    a.target='_blank';
+    a.rel='noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }
 
 /* Original detailed rendering is intentionally bypassed: group reports never expose individual records. */
@@ -951,6 +966,14 @@ async function adicionarMembro(id){
   try{
     const r=await fcFetch(COL_GRUPOS+'/'+encodeURIComponent(id)+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(novo)});
     if(!r.ok){toast('❌ Não foi possível salvar (erro '+r.status+').');return;}
+    const cod=novo.codigoGrupo||novo.codigo||g.codigoGrupo||g.codigo;
+    if(cod){
+      await fcFetch('facunicamps-progresso/'+encodeURIComponent(cod)+'.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        integrantes:novo.integrantes.length,
+        nomes:novo.integrantes,
+        meta:metaDoGrupo(novo)
+      })});
+    }
     toast('✅ '+adicionar.length+' membro(s) adicionado(s). Nova meta do grupo: '+metaDoGrupo(novo)+' respostas.');
     await carregarTudo();
   }catch(e){toast('❌ Erro ao salvar.');}
